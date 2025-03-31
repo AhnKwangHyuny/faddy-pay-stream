@@ -1,4 +1,4 @@
-package faddy.payments_app.fpay.config;
+package faddy.payments_app.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
