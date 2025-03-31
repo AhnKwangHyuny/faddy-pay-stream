@@ -35,3 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### docker ###
+docker-compose.yml
+
+### enviroments function ###
+.env
