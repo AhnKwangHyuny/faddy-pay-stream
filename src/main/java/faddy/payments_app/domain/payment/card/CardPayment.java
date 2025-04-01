@@ -1,5 +1,6 @@
 package faddy.payments_app.domain.payment.card;
 
+import faddy.payments_app.domain.payment.TransactionType;
 import faddy.payments_app.infrastructure.out.pg.toss.response.ResponsePaymentApproved;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;

@@ -5,7 +5,7 @@ import faddy.payments_app.domain.payment.PaymentLedger;
 import faddy.payments_app.domain.payment.PaymentMethod;
 import faddy.payments_app.domain.payment.PaymentStatus;
 import faddy.payments_app.infrastructure.out.pg.toss.response.payment.ResponsePaymentCommon;
-import javax.smartcardio.Card;
+import faddy.payments_app.infrastructure.out.pg.toss.response.payment.method.Card;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

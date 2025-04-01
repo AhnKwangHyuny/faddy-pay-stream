@@ -122,6 +122,12 @@ dependencies {
 	implementation 'com.squareup.retrofit2:converter-gson:2.10.0'
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.10.0'
 	implementation 'com.google.code.gson:gson'
+
+	// Jakarta Validation API
+	implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+	// 표현식 언어(Expression Language) 구현체 - 오류 메시지에서 표현식 사용 시 필요
+	implementation 'org.glassfish:jakarta.el:5.0.0-M1'
+	implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
 }
 
 dependencyManagement {
