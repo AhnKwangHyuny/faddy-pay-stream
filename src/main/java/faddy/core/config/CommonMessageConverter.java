@@ -46,9 +46,8 @@ public class CommonMessageConverter extends AbstractHttpMessageConverter<ApiResp
         HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
 
         String responseMessage = objectMapper.writeValueAsString(objectApiResponse);
-
+        log.info("AbstractHttpMessageConverter writeInternal :: {}", responseMessage);
         StreamUtils.copy(responseMessage.getBytes(StandardCharsets.UTF_8) , outputMessage.getBody());
-
 
     }
 

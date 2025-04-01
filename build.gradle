@@ -115,6 +115,13 @@ dependencies {
 	testImplementation("org.projectlombok:lombok")
 	testImplementation("com.google.code.gson:gson")
 	testImplementation("org.springframework.boot:spring-boot-starter-actuator")
+
+	// Retrofit , okHttp 설정
+	implementation 'com.squareup.retrofit2:retrofit:2.10.0'
+	implementation 'com.squareup.retrofit2:converter-jackson:2.10.0'
+	implementation 'com.squareup.retrofit2:converter-gson:2.10.0'
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.10.0'
+	implementation 'com.google.code.gson:gson'
 }
 
 dependencyManagement {
