@@ -5,6 +5,7 @@ import faddy.payments_app.infrastructure.out.pg.toss.response.ResponsePaymentApp
 import faddy.payments_app.infrastructure.out.pg.toss.response.payment.ResponsePaymentCommon;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import java.util.HashMap;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
