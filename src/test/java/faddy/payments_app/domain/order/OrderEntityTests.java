@@ -54,7 +54,7 @@ public class OrderEntityTests {
         assertNotEquals(orderId1, orderId2);
     }
 
-//    @Test
+    @Test
     @DisplayName("결제 완료 처리 테스트")
     public void given_orderAndPaymentKey_when_orderPaymentFullFill_then_updateStatusAndPaymentId() throws Exception {
         // Given
@@ -70,7 +70,7 @@ public class OrderEntityTests {
         order.getItems().forEach(item -> assertEquals(OrderStatus.PAYMENT_FULLFILL, item.getState()));
     }
 
-//    @Test
+    @Test
     @DisplayName("주문 전체 취소 테스트")
     public void given_order_when_orderAllCancel_then_updateStatusToCancelled() throws Exception {
         // Given
@@ -84,7 +84,7 @@ public class OrderEntityTests {
 //        order.getItems().forEach(item -> assertEquals(OrderStatus.ORDER_CANCELLED, item.getStatus()));
     }
 
-//    @Test
+    @Test
     @DisplayName("주문 부분 취소 테스트")
     public void given_orderAndItemIndices_when_orderCancel_then_updateSpecificItemsStatusToCancelled() throws Exception {
         // Given
@@ -108,7 +108,7 @@ public class OrderEntityTests {
 //        assertEquals(OrderStatus.ORDER_COMPLETED, item2.getStatus());
     }
 
-//    @Test
+    @Test
     @DisplayName("최소 하나의 아이템 검증 테스트 - 빈 리스트일 경우 true 반환")
     public void given_emptyItemList_when_verifyHaveAtLeastOneItem_then_returnTrue() {
         // Given

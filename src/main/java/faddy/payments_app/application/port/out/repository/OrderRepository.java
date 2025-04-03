@@ -1,7 +1,7 @@
 package faddy.payments_app.application.port.out.repository;
 
+import faddy.payments_app.domain.order.Order;
 import java.util.UUID;
-import org.springframework.core.annotation.Order;
 
 public interface OrderRepository {
     Order findById(UUID id);

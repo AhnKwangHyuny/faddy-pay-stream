@@ -3,15 +3,14 @@ package faddy.payments_app.domain.order;
 import lombok.Getter;
 
 /**
- * status string
- * - READY: 결제를 생성하면 가지게 되는 초기 상태입니다. 인증 전까지는 READY 상태를 유지
- * - IN_PROGRESS: 결제수단 정보와 해당 결제수단의 소유자가 맞는지 인증을 마친 상태 결제 승인 API를 호출하면 결제가 완료
- * - WAITING_FOR_DEPOSIT: 가상계좌 결제 흐름에만 있는 상태로, 결제 고객이 발급된 가상계좌에 입금하는 것을 기다리고 있는 상태
- * - DONE: 인증된 결제수단 정보, 고객 정보로 요청한 결제가 승인된 상태
- * - CANCELED: 승인된 결제가 취소된 상태입니다.
- * - PARTIAL_CANCELED: 승인된 결제가 부분 취소된 상태
- * - ABORTED: 결제 승인이 실패한 상태
- * - EXPIRED: 결제 유효 시간 30분이 지나 거래가 취소된 상태  IN_PROGRESS 상태에서 결제 승인 API를 호출하지 않으면 EXPIRED
+ * 주문 상태 코드
+ * - ORDER_COMPLETED(01): 주문이 완료된 상태, 결제 전 단계
+ * - ORDER_CANCELLED(02): 주문이 취소된 상태
+ * - PAYMENT_FULLFILL(03): 결제가 완료되어 주문이 확정된 상태
+ * - SHIPPING_PREPARE(04): 배송 준비 중인 상태, 상품 포장 및 출고 준비가 진행
+ * - SHIPPING(05): 배송 중인 상태, 물품이 고객에게 배송되는 중
+ * - SHIPPING_COMPLETED(06): 배송이 완료된 상태 고객에게 상품이 전달
+ * - PURCHASE_DECISION(07): 구매 결정 상태. 고객이 최종 구매 확정 전 상태
  */
 
 @Getter

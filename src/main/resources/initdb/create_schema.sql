@@ -13,8 +13,8 @@ CREATE TABLE `purchase_order`
     `order_state`  VARCHAR(255)                             NOT NULL COMMENT '주문상태',
     `payment_id`   VARCHAR(255)                             NULL COMMENT '결제정보',
     `total_price`  INT                                      NOT NULL COMMENT '상품 가격 * 주문 수량',
-    `created_at`   DATETIME   DEFAULT NOW()                 NOT NULL,
-    `updated_at`   DATETIME   DEFAULT NOW()                 NOT NUll,
+    `reg_dt`       DATETIME   DEFAULT NOW()                 NOT NULL,
+    `upd_dt`       DATETIME   DEFAULT NOW()                 NOT NUll,
     PRIMARY KEY (order_id)
 );
 
@@ -30,8 +30,8 @@ CREATE TABLE `order_items`
     `quantity`      INT                    NOT NULL COMMENT '주문 수량',
     `amount`        INT                    NOT NULL COMMENT '총 가격(상품 가격 * 주문 수량)',
     `order_state`   VARCHAR(255)           NOT NULL COMMENT '개별 주문상태',
-    `created_at`    DATETIME DEFAULT NOW() NOT NULL,
-    `updated_at`    DATETIME DEFAULT NOW() NOT NUll,
+    `reg_dt`        DATETIME DEFAULT NOW() NOT NULL,
+    `upd_dt`        DATETIME DEFAULT NOW() NOT NUll,
     PRIMARY KEY (id, item_idx),
     UNIQUE KEY (order_id, item_idx, product_id)
 );
@@ -46,8 +46,8 @@ CREATE TABLE `payment_transaction`
     `balance_amount`  INT                    NOT NULL COMMENT '취소 가능한 금액(잔고)',
     `canceled_amount` INT                    NOT NULL COMMENT '취소된 총 금액',
     `pay_out_amount`  INT      DEFAULT 0     NULL COMMENT     '정산 금액(지급액)',
-    `created_at`      DATETIME DEFAULT NOW() NOT NULL,
-    `updated_at`      DATETIME DEFAULT NOW() NOT NUll,
+    `reg_dt`          DATETIME DEFAULT NOW() NOT NULL,
+    `upd_dt`          DATETIME DEFAULT NOW() NOT NUll,
     PRIMARY KEY (id),
     UNIQUE KEY (id, payment_id, method, payment_status)
 );
@@ -61,6 +61,8 @@ CREATE TABLE `card_payment`
     `issuer_code`     VARCHAR(255) NULL COMMENT '카드 발급사 코드',
     `acquirer_code`   VARCHAR(255) NOT NULL COMMENT '카드 매입사 코드',
     `acquirer_status` VARCHAR(255) NOT NULL COMMENT '카드 결제의 상태',
+    `reg_dt`          DATETIME DEFAULT NOW() NOT NULL,
+    `upd_dt`          DATETIME DEFAULT NOW() NOT NUll,
     PRIMARY KEY (payment_key),
     UNIQUE KEY (payment_key, card_number, approve_no)
 );
@@ -76,8 +78,8 @@ CREATE TABLE `payment_settlements`
     `canceled_amount`    INT                    NOT NULL COMMENT '취소된 총 금액',
     `sold_date`          DATE                   NOT NULl COMMENT '정산 매출일',
     `paid_out_date`      DATE                   NOT NULl COMMENT '정산 지급일',
-    `created_at`         DATETIME DEFAULT NOW() NOT NULL,
-    `updated_at`         DATETIME DEFAULT NOW() NOT NUll,
+    `reg_dt`             DATETIME DEFAULT NOW() NOT NULL,
+    `upd_dt`             DATETIME DEFAULT NOW() NOT NUll,
     PRIMARY KEY (id),
     UNIQUE KEY (id, payment_id, method, settlements_status)
 );
