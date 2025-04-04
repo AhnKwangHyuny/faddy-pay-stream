@@ -26,6 +26,7 @@ public class PurchaseOrder {
 
 
     public List<OrderItem> convertToOrderItems(Order order) {
+
         return newlyOrderItem.stream()
             .map(item -> convertToOrderItem(item , order))
             .toList();
@@ -56,6 +57,7 @@ public class PurchaseOrder {
         o.getItems().addAll(convertToOrderItems(o));
         if(Order.verifyHaveAtLeastOneItem(o.getItems())) throw new Exception("아이템이 존재하지 않습니다.");
 
+        o.verifyNoDuplicateOrderItemId();
         o.calculateTotalAmount();
 
         return o;

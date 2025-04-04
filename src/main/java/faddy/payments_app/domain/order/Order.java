@@ -13,8 +13,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -89,13 +91,18 @@ public class Order extends TimeBaseEntity {
     }
 
     public static boolean verifyHaveAtLeastOneItem(List<OrderItem> items) {
+        //Test#1, Test#2, Test#3
         return items == null || items.isEmpty();
     }
 
-    public boolean verifyDuplicateOrderItemId() {
-        List<UUID> productIds = this.getItems().stream().map(OrderItem::getProductId).distinct().toList();
-        if (!productIds.isEmpty()) return true;
-        else throw new IllegalArgumentException();
+    public boolean verifyNoDuplicateOrderItemId() {
+        List<UUID> allIds = this.items.stream().map(OrderItem::getProductId).toList();
+        List<UUID> distinctIds = allIds.stream().distinct().toList();
+
+        if(allIds.size() == distinctIds.size())
+            return true;
+        else
+            throw new IllegalArgumentException("There are duplicate order item ids");
     }
 
     public boolean isNotOrderStatusPurchaseDecision() {

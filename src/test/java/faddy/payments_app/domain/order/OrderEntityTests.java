@@ -156,7 +156,7 @@ public class OrderEntityTests {
         Order order = createSampleOrder();
 
         // When
-        boolean result = order.verifyDuplicateOrderItemId();
+        boolean result = order.verifyNoDuplicateOrderItemId();
 
         // Then
         assertTrue(result);
@@ -173,7 +173,7 @@ public class OrderEntityTests {
             .build();
 
         // When & Then
-        assertThrows(IllegalArgumentException.class, order::verifyDuplicateOrderItemId);
+        assertThrows(IllegalArgumentException.class, order::verifyNoDuplicateOrderItemId);
     }
 
 //    @Test
