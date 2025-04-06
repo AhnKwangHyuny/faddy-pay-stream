@@ -2,6 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { NavLink as RouterNavLink } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 interface NavbarProps {
   isMobile: boolean;
@@ -63,6 +64,8 @@ const Backdrop = styled.div`
 `;
 
 export const Navbar: React.FC<NavbarProps> = ({ isMobile, isOpen, onClose }) => {
+  const { isAuthenticated } = useAuth();
+  
   return (
     <>
       {isMobile && isOpen && <Backdrop onClick={onClose} />}
@@ -73,6 +76,11 @@ export const Navbar: React.FC<NavbarProps> = ({ isMobile, isOpen, onClose }) => 
         <NavLink to="/orders" onClick={isMobile ? onClose : undefined}>
           주문 내역
         </NavLink>
+        {!isAuthenticated && (
+          <NavLink to="/login" onClick={isMobile ? onClose : undefined}>
+            로그인
+          </NavLink>
+        )}
       </NavContainer>
     </>
   );

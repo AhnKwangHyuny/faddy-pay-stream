@@ -12,6 +12,7 @@ const CheckoutPage = lazy(() => import('../features/checkout/pages/CheckoutPage'
 const PaymentCompletePage = lazy(() => import('../features/checkout/pages/PaymentCompletePage').then(module => ({ default: module.PaymentCompletePage })));
 const OrdersListPage = lazy(() => import('../features/orders/pages/OrdersListPage').then(module => ({ default: module.OrdersListPage })));
 const OrderDetailPage = lazy(() => import('../features/orders/pages/OrderDetailPage').then(module => ({ default: module.OrderDetailPage })));
+const LoginPage = lazy(() => import('../features/auth/pages/LoginPage').then(module => ({ default: module.LoginPage })));
 
 // 로딩 중 표시할 컴포넌트
 const PageLoader = () => (
@@ -38,6 +39,9 @@ export const AppRoutes: React.FC = () => {
         {/* 주문 관련 */}
         <Route path="/orders" element={<OrdersListPage />} />
         <Route path="/orders/:orderId" element={<OrderDetailPage />} />
+        
+        {/* 인증 관련 */}
+        <Route path="/login" element={<LoginPage />} />
         
         {/* 404 페이지 */}
         <Route path="*" element={<NotFound />} />
