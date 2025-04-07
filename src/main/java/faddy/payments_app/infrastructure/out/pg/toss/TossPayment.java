@@ -8,6 +8,8 @@ import faddy.payments_app.representation.request.payment.PaymentApproved;
 import faddy.payments_app.representation.request.payment.PaymentCancel;
 import faddy.payments_app.representation.request.payment.PaymentSettlement;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,7 +22,7 @@ import retrofit2.Response;
  * - 결제 승인 요청: {@link #requestPaymentApprove(PaymentApproved)}
  * - 결제 상태 확인: {@link #isPaymentApproved(String)}
  * - 결제 취소 요청: {@link #requestPaymentCancel(String, PaymentCancel)}
- * - 정산 정보 조회: {@link #requestPaymentSettlement(PaymentSettlement)}
+ * - 정산 정보 조회: {@link #requestPaymentSettlement()}
  *
  *
  * @see PaymentAPIs 결제 처리 인터페이스
@@ -101,27 +103,24 @@ public class TossPayment implements PaymentAPIs {
      * 지정된 기간 내의 정산 정보를 페이징 처리하여 조회
      * 정산 정보가 없거나 API 호출이 실패하면 예외가 발생
      *
-     * @param paymentSettlement 정산 조회 조건 (조회 기간, 페이지 정보 등)
      * @return 조회된 정산 정보 목록
      * @throws IOException API 호출 실패 또는 정산 정보가 없는 경우 발생
      */
 
     @Override
-    public List<ResponsePaymentSettlements> requestPaymentSettlement(
-        PaymentSettlement paymentSettlement) throws IOException {
+    public List<ResponsePaymentSettlements> requestPaymentSettlement() throws IOException {
+        String startDate = LocalDate.now(ZoneId.of("Asia/Seoul")).minusDays(3).toString();
+        String endDate = LocalDate.now(ZoneId.of("Asia/Seoul")).toString();
+        int page = 1;
+        int size = 5000;
 
-        String startDate = paymentSettlement.getStartDate();
-        String endDate = paymentSettlement.getEndDate();
-        int page = paymentSettlement.getPage();
-        int size = paymentSettlement.getSize();
-
-        Response<List<ResponsePaymentSettlements>> response = tossClient.paymentSettlements(startDate,endDate,page, size).execute();
-
-        if(response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+        Response<List<ResponsePaymentSettlements>> response = tossClient.paymentSettlements(startDate, endDate, page, size).execute();
+        if(response.isSuccessful() && response.body() != null && !response.body().isEmpty())  {
             return response.body();
         }
 
-        throw new IOException(response.errorBody().string());
+
+        throw new IOException(response.message());
     }
 
 }

@@ -1,0 +1,53 @@
+package faddy.payments_app.infrastructure.out.pg.mock;
+
+import faddy.payments_app.application.port.out.api.PaymentAPIs;
+import faddy.payments_app.infrastructure.out.pg.toss.response.ResponsePaymentApproved;
+import faddy.payments_app.infrastructure.out.pg.toss.response.ResponsePaymentCancel;
+import faddy.payments_app.infrastructure.out.pg.toss.response.ResponsePaymentSettlements;
+import faddy.payments_app.representation.request.payment.PaymentApproved;
+import faddy.payments_app.representation.request.payment.PaymentCancel;
+import faddy.payments_app.representation.request.payment.PaymentSettlement;
+import java.io.IOException;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import retrofit2.Response;
+
+@Component
+@RequiredArgsConstructor
+public class MockTossPayment implements PaymentAPIs {
+
+    private final MockTossPaymentAPIs mockTossClient;
+
+    @Override
+    public ResponsePaymentApproved requestPaymentApprove(PaymentApproved paymentInfo)
+        throws IOException {
+        return null;
+    }
+
+    @Override
+    public boolean isPaymentApproved(String status) {
+        return "DONE".equalsIgnoreCase(status);
+    }
+
+    @Override
+    public ResponsePaymentCancel requestPaymentCancel(String paymentKey,
+        PaymentCancel cancelMessage) throws IOException {
+        return null;
+    }
+
+    @Override
+    public List<ResponsePaymentSettlements> requestPaymentSettlement() throws IOException {
+
+        Response<List<ResponsePaymentSettlements>> response = mockTossClient.paymentSettlements().execute();
+
+        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+            return response.body();
+        }
+
+        throw new IOException(response.message());
+    }
+
+
+
+}
