@@ -4,15 +4,18 @@ import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Spinner } from '../shared/components/ui/Spinner';
 import { NotFound } from '../shared/components/common/NotFound';
+import { createBrowserRouter } from 'react-router-dom';
 
 // 페이지 컴포넌트 지연 로딩
-const ProductListPage = lazy(() => import('../features/products/pages/ProductListPage').then(module => ({ default: module.ProductListPage })));
-const ProductDetailPage = lazy(() => import('../features/products/pages/ProductDetailPage').then(module => ({ default: module.ProductDetailPage })));
-const CheckoutPage = lazy(() => import('../features/checkout/pages/CheckoutPage').then(module => ({ default: module.CheckoutPage })));
-const PaymentCompletePage = lazy(() => import('../features/checkout/pages/PaymentCompletePage').then(module => ({ default: module.PaymentCompletePage })));
-const OrdersListPage = lazy(() => import('../features/orders/pages/OrdersListPage').then(module => ({ default: module.OrdersListPage })));
-const OrderDetailPage = lazy(() => import('../features/orders/pages/OrderDetailPage').then(module => ({ default: module.OrderDetailPage })));
-const LoginPage = lazy(() => import('../features/auth/pages/LoginPage').then(module => ({ default: module.LoginPage })));
+const ProductListPage = lazy(() => import('../features/products/pages/ProductListPage'));
+const ProductDetailPage = lazy(() => import('../features/products/pages/ProductDetailPage'));
+const CheckoutPage = lazy(() => import('../features/checkout/pages/CheckoutPage'));
+const TossPaymentPage = lazy(() => import('../features/payment/pages/TossPaymentPage'));
+const PaymentCompletePage = lazy(() => import('../features/payment/pages/PaymentCompletePage'));
+const PaymentFailPage = lazy(() => import('../features/payment/pages/PaymentFailPage'));
+const OrderListPage = lazy(() => import('../features/orders/pages/OrderListPage'));
+const LoginPage = lazy(() => import('../features/auth/pages/LoginPage'));
+const NotFoundPage = lazy(() => import('../shared/pages/NotFoundPage'));
 
 // 로딩 중 표시할 컴포넌트
 const PageLoader = () => (
@@ -20,6 +23,45 @@ const PageLoader = () => (
     <Spinner size="large" />
   </div>
 );
+
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <ProductListPage />,
+  },
+  {
+    path: '/products/:productId',
+    element: <ProductDetailPage />,
+  },
+  {
+    path: '/checkout',
+    element: <CheckoutPage />,
+  },
+  {
+    path: '/payment/checkout',
+    element: <TossPaymentPage />,
+  },
+  {
+    path: '/payment/complete',
+    element: <PaymentCompletePage />,
+  },
+  {
+    path: '/payment/fail',
+    element: <PaymentFailPage />,
+  },
+  {
+    path: '/orders',
+    element: <OrderListPage />,
+  },
+  {
+    path: '/login',
+    element: <LoginPage />,
+  },
+  {
+    path: '*',
+    element: <NotFoundPage />,
+  },
+]);
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -34,11 +76,12 @@ export const AppRoutes: React.FC = () => {
         
         {/* 결제 관련 */}
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/payment/checkout" element={<TossPaymentPage />} />
         <Route path="/payment/complete" element={<PaymentCompletePage />} />
+        <Route path="/payment/fail" element={<PaymentFailPage />} />
         
         {/* 주문 관련 */}
-        <Route path="/orders" element={<OrdersListPage />} />
-        <Route path="/orders/:orderId" element={<OrderDetailPage />} />
+        <Route path="/orders" element={<OrderListPage />} />
         
         {/* 인증 관련 */}
         <Route path="/login" element={<LoginPage />} />
