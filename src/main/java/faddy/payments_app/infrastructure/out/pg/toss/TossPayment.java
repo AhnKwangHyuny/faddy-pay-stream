@@ -29,7 +29,7 @@ import retrofit2.Response;
  * @see TossPaymentAPIs 토스 페이먼츠 API 클라이언트 인터페이스
  */
 
-@Component
+@Component("tossPayment")
 @RequiredArgsConstructor
 public class TossPayment implements PaymentAPIs {
 

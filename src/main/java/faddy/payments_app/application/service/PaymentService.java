@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,11 +32,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class PaymentService implements PaymentFullfillUseCase, GetPaymentInfoUseCase {
 
-    private final PaymentAPIs tossPaymentAPIs;
+    @Qualifier("tossPayment")
+    private final PaymentAPIs tossPayment;
     private final OrderRepository orderRepository;
     private final PaymentLedgerRepository paymentLedgerRepository;
     private final Set<TransactionTypeRepository> transactionTypeRepositorySet;
-    private final PaymentAPIs tossPayment;
 
     private final Map<String, TransactionTypeRepository> transactionTypeRepositories = new HashMap<>();
     private TransactionTypeRepository transactionTypeRepository;

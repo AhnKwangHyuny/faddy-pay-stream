@@ -1,6 +1,6 @@
 [
   {
-    "mId": "faddy-ecommerce",
+    "mId": "fast-ecommerce",
     "paymentKey": "xLpgeoO7410238740297423RBKEzMjPJyG",
     "transactionKey": "497BF239847238947B0491D84B4",
     "orderId": "EjBNtZK7j8q2TlGFLJ-9T",
@@ -43,7 +43,6 @@
       "cancelReason": "주문취소",
       "taxExemptionAmount": 0,
       "canceledAt": "2023-11-25T13:40:03+09:00",
-      "transferDiscountAmount": 0,
       "easyPayDiscountAmount": 0,
       "receiptKey": null,
       "cancelAmount": 99800,
@@ -60,7 +59,7 @@
     "payOutAmount": -97550
   },
   {
-    "mId": "faddy-ecommerce",
+    "mId": "fast-ecommerce",
     "paymentKey": "jvX2KBP9Q21349087239084706yLYlaEJ7",
     "transactionKey": "70CEDA72394802394F24AD80C6",
     "orderId": "EoSLagnG8KmcmetaUrEna",
@@ -111,7 +110,7 @@
     "payOutAmount": 51719
   },
   {
-    "mId": "faddy-ecommerce",
+    "mId": "fast-ecommerce",
     "paymentKey": "oYwn6qbDZOAQ1239472398vdk4El1Bp0J5",
     "transactionKey": "4E202B23498729847322CA68371CB3",
     "orderId": "LNnUye-w3A44V2iLmHLFK",
@@ -158,7 +157,7 @@
     "payOutAmount": 40565
   },
   {
-    "mId": "faddy-ecommerce",
+    "mId": "fast-ecommerce",
     "paymentKey": "evl2J94098172430982374mA1QXRyZ4gLw",
     "transactionKey": "EDAD0A8F2349048230948460F533B",
     "orderId": "Dri1BWRA8Le-ezwDseJYJ",
@@ -173,7 +172,7 @@
     "approvedAt": "2023-11-25T13:54:05+09:00",
     "soldDate": "2023-11-25",
     "paidOutDate": "2023-11-30",
-    "card": {
+    "card":  {
       "issuerCode": "11",
       "acquirerCode": "11",
       "number": "55704251****800*",
@@ -185,13 +184,10 @@
       "cardType": "신용",
       "ownerType": "개인",
       "acquireStatus": "READY",
-      "amount": 99800
+      "amount": 2000
     },
     "virtualAccount": null,
-    "transfer": {
-      "bankCode": "92",
-      "settlementStatus": "INCOMPLETED"
-    },
+    "transfer": null,
     "mobilePhone": null,
     "giftCertificate": null,
     "easyPay": null,

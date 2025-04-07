@@ -39,14 +39,14 @@ public class TossApiClientConfig {
     }
 
     @Bean
-    public Retrofit retrofit(OkHttpClient client) {
+    public Retrofit retrofit(OkHttpClient okHttpClient) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
 
         return new Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(JacksonConverterFactory.create(objectMapper))
-            .client(client)
+            .client(okHttpClient)
             .build();
     }
 

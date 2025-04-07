@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import retrofit2.Response;
 
-@Component
+@Component("mockTossPayment")
 @RequiredArgsConstructor
 public class MockTossPayment implements PaymentAPIs {
 
