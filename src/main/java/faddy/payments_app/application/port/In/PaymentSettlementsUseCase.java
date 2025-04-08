@@ -1,5 +1,5 @@
 package faddy.payments_app.application.port.In;
 
 public interface PaymentSettlementsUseCase {
-    boolean getPaymentSettlements() throws Exception;
+    void getPaymentSettlements() throws Exception;
 }

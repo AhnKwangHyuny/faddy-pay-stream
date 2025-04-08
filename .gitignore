@@ -44,3 +44,6 @@ docker-compose.yml
 
 ### mock settlement api ###
 settlement_mock_json
+
+### avro ####
+settlements.avsc

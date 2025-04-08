@@ -37,17 +37,19 @@ public class MockTossPayment implements PaymentAPIs {
     }
 
     @Override
-    public List<ResponsePaymentSettlements> requestPaymentSettlement() throws IOException {
+    public List<ResponsePaymentSettlements> requestPaymentSettlement(PaymentSettlement paymentSettlement) throws IOException {
+        String startDate = paymentSettlement.getStartDate();
+        String endDate = paymentSettlement.getEndDate();
+        int page = paymentSettlement.getPage();
+        int size = paymentSettlement.getSize();
 
         Response<List<ResponsePaymentSettlements>> response = mockTossClient.paymentSettlements().execute();
-
-        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+        if(response.isSuccessful() && response.body() != null && !response.body().isEmpty())  {
             return response.body();
         }
 
         throw new IOException(response.message());
     }
-
 
 
 }

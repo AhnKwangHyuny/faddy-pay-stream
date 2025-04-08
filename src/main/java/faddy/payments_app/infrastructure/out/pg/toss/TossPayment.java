@@ -22,7 +22,7 @@ import retrofit2.Response;
  * - 결제 승인 요청: {@link #requestPaymentApprove(PaymentApproved)}
  * - 결제 상태 확인: {@link #isPaymentApproved(String)}
  * - 결제 취소 요청: {@link #requestPaymentCancel(String, PaymentCancel)}
- * - 정산 정보 조회: {@link #requestPaymentSettlement()}
+ * - 정산 정보 조회: {@link #requestPaymentSettlement(PaymentSettlement paymentSettlement)}
  *
  *
  * @see PaymentAPIs 결제 처리 인터페이스
@@ -108,17 +108,16 @@ public class TossPayment implements PaymentAPIs {
      */
 
     @Override
-    public List<ResponsePaymentSettlements> requestPaymentSettlement() throws IOException {
-        String startDate = LocalDate.now(ZoneId.of("Asia/Seoul")).minusDays(3).toString();
-        String endDate = LocalDate.now(ZoneId.of("Asia/Seoul")).toString();
-        int page = 1;
-        int size = 5000;
+    public List<ResponsePaymentSettlements> requestPaymentSettlement(PaymentSettlement paymentSettlement) throws IOException {
+        String startDate = paymentSettlement.getStartDate();
+        String endDate = paymentSettlement.getEndDate();
+        int page = paymentSettlement.getPage();
+        int size = paymentSettlement.getSize();
 
         Response<List<ResponsePaymentSettlements>> response = tossClient.paymentSettlements(startDate, endDate, page, size).execute();
         if(response.isSuccessful() && response.body() != null && !response.body().isEmpty())  {
             return response.body();
         }
-
 
         throw new IOException(response.message());
     }

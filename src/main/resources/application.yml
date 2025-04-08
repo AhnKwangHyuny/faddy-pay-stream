@@ -1,6 +1,13 @@
 spring:
   application:
     name: "faddy-payments-app"
+
+  datasource:
+    url: jdbc:mysql://localhost:13306/faddy_labs?serverTimezone=UTC&characterEncoding=UTF-8
+    username: faddy
+    password: testlabs
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
   thymeleaf:
     cache: false
     check-template-location: true
@@ -11,7 +18,7 @@ error-trace:
   stacktrace: true
 
 my:
-  name: kwanghyun-test
+  name: hyun-test
   age: 29
 
 ---
@@ -40,18 +47,21 @@ spring:
     template:
       batch-size: 100
   kafka:
-    bootstrap-servers: [
-      "172.31.5.117:19094"
-    ]
-    group-id: "settlements_1"
-    schema-registry-url: "http://172.31.5.117:8085"
-  pg:
-    tosspayments:
-      baseUrl: "https://api.tosspayments.com/"
-      privateKey: "test_sk_0RnYX2w532257LzwRYBK3NeyqApQ"
+    producer:
+      bootstrap-servers: ["172.31.5.117:19094"]
+      schema-registry-url: "http://172.31.5.117:8085"
+    consumer:
+      bootstrap-servers: ["172.31.5.117:19094"]
+      group-id: "settlements_1"
+      schema-registry-url: "http://172.31.5.117:8085"
+
+pg:
+  tosspayments:
+    baseUrl: "https://api.tosspayments.com/"
+    privateKey: "test_sk_0RnYX2w532257LzwRYBK3NeyqApQ"
 
 my:
-  name: kwanghyun_dev
+  name: hyun_dev
   age: 29
 
 logging:
@@ -75,7 +85,7 @@ spring:
   # JPA 설정
   jpa:
     hibernate:
-      ddl-auto: update # DB 초기화 전략 (none, create, create-drop, update, validate)
+      ddl-auto: create # DB 초기화 전략 (none, create, create-drop, update, validate)
     properties:
       hibernate:
         auto_quote_keyword: false
@@ -86,18 +96,21 @@ spring:
     template:
       batch-size: 100
   kafka:
-    bootstrap-servers: [
-      "localhost:19094"
-    ]
-    group-id: "settlements_1"
-    schema-registry-url: "http://localhost:8085"
-  pg:
-    tosspayments:
-      baseUrl: "https://api.tosspayments.com/"
-      privateKey: "test_sk_0RnYX2w532257LzwRYBK3NeyqApQ"
+    producer:
+      bootstrap-servers: ["localhost:19094"]
+      schema-registry-url: "http://localhost:8085"
+    consumer:
+      bootstrap-servers: ["localhost:19094"]
+      group-id: "settlements_1"
+      schema-registry-url: "http://localhost:8085"
+
+pg:
+  tosspayments:
+    baseUrl: "https://api.tosspayments.com/"
+    privateKey: "test_sk_0RnYX2w532257LzwRYBK3NeyqApQ"
 
 my:
-  name: jinho_dev
+  name: hyun_dev
   age: 34
 
 logging:
@@ -132,18 +145,21 @@ spring:
     template:
       batch-size: 100
   kafka:
-    bootstrap-servers: [
-      "kafka-1:19092"
-    ]
-    group-id: "settlements_1"
-    schema-registry-url: "http://172.26.0.13:8085"
-  pg:
-    tosspayments:
-      baseUrl: "https://api.tosspayments.com/"
-      privateKey: "test_sk_0RnYX2w532257LzwRYBK3NeyqApQ"
+    producer:
+      bootstrap-servers: ["kafka-1:19092"]
+      schema-registry-url: "http://172.26.0.13:8085"
+    consumer:
+      bootstrap-servers: ["kafka-1:19092"]
+      group-id: "settlements_1"
+      schema-registry-url: "http://172.26.0.13:8085"
+
+pg:
+  tosspayments:
+    baseUrl: "https://api.tosspayments.com/"
+    privateKey: "test_sk_0RnYX2w532257LzwRYBK3NeyqApQ"
 
 my:
-  name: jinho_dev
+  name: hyun_dev2
   age: 34
 
 logging:
