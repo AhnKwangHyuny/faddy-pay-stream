@@ -143,11 +143,36 @@ dependencyManagement {
 	}
 }
 
-tasks.withType(com.github.davidmc24.gradle.plugin.avro.GenerateAvroJavaTask) {
+// 소스 세트 설정
+sourceSets {
+	main {
+		java {
+			srcDir 'build/generated-main-avro-sources' // 메인 Avro 소스 디렉토리 추가
+		}
+	}
+	test {
+		java {
+			srcDir 'build/generated-test-avro-sources' // 테스트 Avro 소스 디렉토리 추가
+		}
+	}
+}
+
+// 기본 Avro 태스크 설정 (메인 소스용)
+tasks.withType(com.github.davidmc24.gradle.plugin.avro.GenerateAvroJavaTask).configureEach {
 	fieldVisibility = "PRIVATE"
 	createSetters = false
+}
+
+// 메인 Avro 소스 생성 설정
+tasks.named('generateAvroJava') {
 	source = "src/main/avro"
-	outputDir = file("build/generated-sources")
+	outputDir = file("build/generated-main-avro-sources")
+}
+
+// 테스트 Avro 소스 생성 설정
+tasks.named('generateTestAvroJava') {
+	source = "src/test/avro"
+	outputDir = file("build/generated-test-avro-sources")
 }
 
 tasks.named('test') {
@@ -174,4 +199,19 @@ tasks.register('copyOasToSwagger', Copy) {
 	from("$buildDir/api-spec/openapi3.yaml") // 복제할 yaml 파일 타겟팅
 	into("src/main/resources/static/swagger-ui/.") // 타겟 디렉토리로 파일 복제
 	dependsOn("openapi3") // openapi3 task가 먼저 실행되도록 설정
+}
+
+// Avro 생성 태스크와 Java 컴파일 간의 의존성 추가
+tasks.named('compileJava') {
+	dependsOn 'generateAvroJava'
+	// 메인 Avro 생성 디렉토리를 소스 디렉토리로 추가
+	sourceSets.main.java.srcDir 'build/generated-main-avro-sources'
+}
+
+tasks.named('compileTestJava') {
+	dependsOn 'generateTestAvroJava'
+	// 테스트 Avro 생성 디렉토리를 테스트 소스 디렉토리로 추가
+	sourceSets.test.java.srcDir 'build/generated-test-avro-sources'
+	// 이 태스크가 compileJava 이후에 실행되도록 보장
+	mustRunAfter 'compileJava'
 }

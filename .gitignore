@@ -47,3 +47,6 @@ settlement_mock_json
 
 ### avro ####
 settlements.avsc
+
+###Docker file ####
+Dockerfile

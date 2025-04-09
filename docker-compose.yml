@@ -52,7 +52,6 @@ services:
       default_bridge:
         ipv4_address: 172.26.0.12
 
-
   schema-registry:
     image: confluentinc/cp-schema-registry:latest
     environment:
@@ -85,7 +84,6 @@ services:
       default_bridge:
         ipv4_address: 172.26.0.17
 
-
   frontend:
     build:
       context: ./frontend
@@ -105,25 +103,19 @@ services:
       default_bridge:
         ipv4_address: 172.26.0.15
     depends_on:
-      - backend
+      - app
 
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  app:
+    image: fastcamp/fast-ecommerce:latest
     ports:
-      - "8080:8080"
+      - 8080:8080
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/faddy_labs?useSSL=false&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=testbed
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+      SPRING_PROFILES_ACTIVE: dev-docker
+    depends_on:
+      - mysql
     networks:
       default_bridge:
         ipv4_address: 172.26.0.16
-    depends_on:
-      - mysql
-      - kafka-1
 
 networks:
   default_bridge:
