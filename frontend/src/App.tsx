@@ -1,30 +1,31 @@
 import React from 'react';
-import { ThemeProvider } from 'styled-components';
-import logo from './logo.svg';
-import './App.css';
-import theme from './styles/theme';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { CartProvider } from './context/CartContext';
+import AppRoutes from './routes';
+import './index.css';
 
-function App() {
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
+
+const App: React.FC = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.tsx</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <CartProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </CartProvider>
+    </QueryClientProvider>
   );
-}
+};
 
 export default App;

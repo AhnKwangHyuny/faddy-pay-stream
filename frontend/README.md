@@ -1,46 +1,84 @@
-# Getting Started with Create React App
+# 토스 페이먼츠 통합 React+TypeScript 프론트엔드
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+토스 페이먼츠 API를 사용하여 결제 시스템을 구현한 React & TypeScript 기반의 프론트엔드 프로젝트입니다.
 
-## Available Scripts
+## 주요 기능
 
-In the project directory, you can run:
+1. 상품 목록 및 상세 페이지 표시
+2. 장바구니 기능
+3. 결제 프로세스 (토스 페이먼츠 위젯 통합)
+4. 결제 완료 및 실패 페이지
+5. 구매 내역 조회
 
-### `npm start`
+## 기술 스택
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- React 18+
+- TypeScript 5+
+- React Router v6
+- Tailwind CSS
+- Framer Motion (애니메이션)
+- Axios (HTTP 요청)
+- React Query (상태 관리)
+- Context API (장바구니 관리)
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## 시작하기
 
-### `npm test`
+### 의존성 설치
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+npm install
+```
 
-### `npm run build`
+### 개발 서버 실행
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 빌드
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+npm run build
+```
 
-### `npm run eject`
+## 환경 변수 설정
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+프로젝트 루트에 `.env` 파일을 생성하고 다음 변수를 설정하세요:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+REACT_APP_API_BASE_URL=http://localhost:8080
+REACT_APP_TOSS_PAYMENTS_CLIENT_KEY=your_toss_payments_client_key
+REACT_APP_ENV=development
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 폴더 구조
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+```
+src/
+├── assets/                   # 이미지, 아이콘 등 정적 파일
+├── components/               # 재사용 가능한 컴포넌트
+│   ├── common/               # 공통 컴포넌트 (버튼, 인풋 등)
+│   ├── layout/               # 레이아웃 관련 컴포넌트
+│   ├── product/              # 상품 관련 컴포넌트
+│   ├── cart/                 # 장바구니 관련 컴포넌트
+│   ├── payment/              # 결제 관련 컴포넌트
+│   └── order/                # 주문 관련 컴포넌트
+├── pages/                    # 라우트별 페이지 컴포넌트
+├── hooks/                    # 커스텀 훅
+├── context/                  # Context API 관련 파일
+├── services/                 # API 호출 및 비즈니스 로직
+├── utils/                    # 유틸리티 함수
+├── types/                    # TypeScript 타입 정의
+├── config/                   # 환경 변수 및 설정
+├── App.tsx                   # 메인 앱 컴포넌트
+└── index.tsx                 # 진입점
+```
 
-## Learn More
+## 테스트 결제 정보
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+개발 환경에서 테스트할 때 사용할 수 있는 카드 정보:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- 카드번호: 4111 1111 1111 1111
+- 만료일: 12/25 (미래 날짜)
+- 생년월일/사업자등록번호: 920101
+- 비밀번호: 임의의 두 자리 숫자
