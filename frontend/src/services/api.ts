@@ -16,17 +16,8 @@ export const api = axios.create({
 // 응답 인터셉터
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    // API 응답 구조가 { success, data, error } 형태라면 데이터만 추출
-    if (response.data && 'success' in response.data) {
-      const apiResponse = response.data as ApiResponse<any>;
-      if (apiResponse.success) {
-        return apiResponse.data;
-      } else {
-        return Promise.reject(apiResponse.error);
-      }
-    }
-    
-    // 기본 응답은 그대로 반환
+    // API 응답 처리를 수정하지 않고 그대로 반환
+    // 각 서비스 함수에서 처리하도록 함
     return response.data;
   },
   (error: AxiosError) => {
@@ -57,10 +48,10 @@ api.interceptors.response.use(
       }
     } else if (error.request) {
       // 요청은 보냈지만 응답이 없는 경우 (네트워크 오류)
-      console.error('네트워크 오류가 발생했습니다.');
+      console.error('네트워크 오류가 발생했습니다:', error.request);
     } else {
       // 요청 설정 중 오류 발생
-      console.error('요청 설정 중 오류가 발생했습니다.');
+      console.error('요청 설정 중 오류가 발생했습니다:', error.message);
     }
     
     return Promise.reject(error);

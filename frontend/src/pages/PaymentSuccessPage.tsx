@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useMutation } from '@tanstack/react-query';
-import { confirmPayment } from '../services/paymentService';
+import { v4 as uuidv4 } from 'uuid';
+import { confirmPayment, getPaymentSuccess } from '../services/paymentService';
 import { getOrderById } from '../services/orderService';
-import { Order } from '../types/order.types';
+import { Order, OrderStatus } from '../types/order.types';
+import { PaymentApproved } from '../types/payment.types';
 import { useCart } from '../context/CartContext';
 
 const PaymentSuccessPage: React.FC = () => {
@@ -16,31 +18,61 @@ const PaymentSuccessPage: React.FC = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-  // Payment confirmation mutation
+  // 결제 승인 요청 뮤테이션
   const confirmPaymentMutation = useMutation({
-    mutationFn: (params: { paymentKey: string; orderId: string; amount: number }) => 
+    mutationFn: (params: PaymentApproved) => 
       confirmPayment(params.paymentKey, params.orderId, params.amount),
-    onSuccess: async (_, variables) => {
+    onSuccess: async (result, variables) => {
       try {
-        // Get order details after payment confirmation
-        const orderData = await getOrderById(variables.orderId);
-        setOrder(orderData);
+        console.log("결제 승인 성공:", result);
         
-        // Clear the cart since payment is successful
-        dispatch({ type: 'CLEAR_CART' });
+        // 결제 성공 처리
+        await getPaymentSuccess(variables.paymentKey, variables.orderId, variables.amount);
+        
+        try {
+          // 주문 정보 조회
+          const orderData = await getOrderById(variables.orderId);
+          setOrder(orderData);
+          
+          // 장바구니 비우기
+          dispatch({ type: 'CLEAR_CART' });
+        } catch (orderErr: any) {
+          console.error('주문 정보 조회 실패:', orderErr);
+          // 주문 정보 조회 실패 시에도 결제 성공 화면을 보여줌
+          // 더미 주문 데이터 생성
+          setOrder({
+            orderId: variables.orderId,
+            name: '고객',
+            email: 'customer@example.com',
+            phoneNumber: '',
+            totalPrice: variables.amount,
+            items: [{ 
+              id: 0,
+              itemIdx: 1, // 최소값 1 (백엔드 @Min(1) 제약조건 충족)
+              productId: uuidv4(), // 유효한 UUID 생성
+              productName: '결제 상품', 
+              price: variables.amount,
+              quantity: 1,
+              amount: variables.amount,
+              size: '',
+              state: OrderStatus.PAYMENT_FULLFILL
+            }],
+            status: OrderStatus.PAYMENT_FULLFILL
+          });
+        }
       } catch (err: any) {
-        console.error('Failed to fetch order details:', err);
-        setError('주문 정보를 불러오는데 실패했습니다.');
+        console.error('결제 성공 처리 실패:', err);
+        setError('결제는 승인되었으나 추가 처리 중 오류가 발생했습니다.');
       } finally {
         setIsLoading(false);
       }
     },
     onError: (error: any) => {
-      console.error('Payment confirmation failed:', error);
+      console.error('결제 승인 실패:', error);
       setError(error.message || '결제 승인 중 오류가 발생했습니다.');
       setIsLoading(false);
       
-      // Redirect to fail page with error details
+      // 실패 페이지로 리다이렉트
       navigate(`/fail?message=${encodeURIComponent(error.message || '결제 승인 실패')}&code=${error.code || 'UNKNOWN'}`);
     },
   });
@@ -48,7 +80,7 @@ const PaymentSuccessPage: React.FC = () => {
   useEffect(() => {
     const processPayment = async () => {
       try {
-        // Extract query parameters
+        // URL 파라미터 추출
         const urlParams = new URLSearchParams(location.search);
         const paymentKey = urlParams.get('paymentKey');
         const orderId = urlParams.get('orderId');
@@ -58,7 +90,7 @@ const PaymentSuccessPage: React.FC = () => {
           throw new Error('필수 결제 정보가 누락되었습니다.');
         }
         
-        // Confirm payment with backend
+        // 백엔드에 결제 승인 요청
         confirmPaymentMutation.mutate({
           paymentKey,
           orderId,

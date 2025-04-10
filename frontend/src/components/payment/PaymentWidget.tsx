@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Order } from '../../types/order.types';
+import { loadTossPaymentsWidget } from '../../services/paymentService';
+import { v4 as uuidv4 } from 'uuid';
 
 interface PaymentWidgetProps {
   order: Order;
@@ -20,6 +22,7 @@ const PaymentWidget: React.FC<PaymentWidgetProps> = ({
   onPaymentSuccess,
   onPaymentFail
 }) => {
+  console.log("order widget" , order)
   const [widget, setWidget] = useState<any>(null);
   const [paymentMethodWidget, setPaymentMethodWidget] = useState<any>(null);
   const [couponApplied, setCouponApplied] = useState<boolean>(false);
@@ -36,47 +39,65 @@ const PaymentWidget: React.FC<PaymentWidgetProps> = ({
   };
 
   useEffect(() => {
-    // Load Toss Payments SDK
-    const script = document.createElement('script');
-    script.src = 'https://js.tosspayments.com/v1/payment-widget';
-    script.async = true;
+    // 수신한 주문 객체 로깅
+    console.log('PaymentWidget에 전달된 주문 객체:', order);
     
-    script.onload = () => {
-      if (window.PaymentWidget) {
-        try {
+    // 토스 페이먼츠 SDK 로드 및 초기화
+    const initializePaymentWidget = async () => {
+      try {
+        await loadTossPaymentsWidget();
+        
+        if (window.PaymentWidget) {
+          // 고객 식별자 생성 (토스페이먼츠 형식 요구사항에 맞게)
+          // 영문 대소문자, 숫자, 특수문자(`-`,`_`,`=`,`.`,`@`)만 허용, 2-50자
+          const generateValidCustomerKey = () => {
+            // 주문 ID를 기본으로 사용
+            let key = '';
+            
+            // 주문 ID가 있으면 사용, 없으면 UUID 생성
+            if (order.orderId) {
+              key = order.orderId;
+            } else {
+              key = `order-${uuidv4()}`;
+            }
+            
+            // 유효한 문자만 남기기
+            key = key.replace(/[^a-zA-Z0-9\-_=.@]/g, '');
+            
+            // 길이 체크
+            if (key.length < 2) {
+              key = `customer-${Date.now()}`;
+            }
+            
+            // 최대 길이 제한
+            return key.substring(0, 50);
+          };
+          
+          const customerKey = generateValidCustomerKey();
+          console.log('결제 위젯 초기화 - 고객 식별자:', customerKey);
+          
           const paymentWidget = window.PaymentWidget(
             clientKey,
-            order.name || '고객' // Customer identifier
+            customerKey
           );
           
           setWidget(paymentWidget);
-          setLoading(false);
-        } catch (error) {
-          console.error('Failed to initialize payment widget:', error);
-          setLoading(false);
         }
+      } catch (error) {
+        console.error('결제 위젯 초기화 실패:', error);
+      } finally {
+        setLoading(false);
       }
     };
     
-    script.onerror = () => {
-      console.error('Failed to load payment widget script');
-      setLoading(false);
-    };
-    
-    document.body.appendChild(script);
-    
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, [clientKey, order.name]);
+    initializePaymentWidget();
+  }, [clientKey, order.orderId]);
   
-  // Initialize payment method widget when widget is loaded and container is available
+  // 결제 위젯이 로드되고 컨테이너가 준비되면 UI 렌더링
   useEffect(() => {
     if (widget && paymentMethodRef.current && agreementRef.current) {
       try {
-        // Render payment methods
+        // 결제 수단 UI 렌더링
         const methodWidget = widget.renderPaymentMethods(
           '#payment-method-container',
           { value: order.totalPrice },
@@ -85,17 +106,17 @@ const PaymentWidget: React.FC<PaymentWidgetProps> = ({
         
         setPaymentMethodWidget(methodWidget);
         
-        // Render agreement
+        // 이용약관 UI 렌더링
         widget.renderAgreement('#agreement-container', { variantKey: 'AGREEMENT' });
         
         setIsPaymentReady(true);
       } catch (error) {
-        console.error('Failed to render payment UI:', error);
+        console.error('결제 UI 렌더링 실패:', error);
       }
     }
   }, [widget, order.totalPrice]);
   
-  // Update amount when coupon state changes
+  // 쿠폰 적용 시 결제 금액 업데이트
   useEffect(() => {
     if (paymentMethodWidget) {
       paymentMethodWidget.updateAmount(calculateTotalPrice());
@@ -113,20 +134,49 @@ const PaymentWidget: React.FC<PaymentWidgetProps> = ({
     }
     
     const finalAmount = calculateTotalPrice();
+    console.log('최종 결제 금액:', finalAmount);
     
     try {
-      await widget.requestPayment({
+      // API의 기본 URL을 확인 (브라우저 콘솔에 로그)
+      console.log('API Base URL:', process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080');
+      
+      // 결제 요청 파라미터 - 성공 및 실패 URL이 절대 경로인지 확인
+      const successUrl = new URL('/success', window.location.origin).toString();
+      const failUrl = new URL('/fail', window.location.origin).toString();
+      
+      console.log('Success URL:', successUrl);
+      console.log('Fail URL:', failUrl);
+      
+      // 주문 아이템 확인
+      console.log('주문 아이템:', order.items);
+      const orderName = order.items && order.items.length > 0
+        ? (order.items.length > 1 
+            ? `${order.items[0].productName} 외 ${order.items.length - 1}건` 
+            : order.items[0].productName)
+        : '상품 주문';
+      
+      console.log('결제 요청 정보:', {
         orderId: order.orderId,
-        orderName: order.items.map(item => item.productName).join(', ').substring(0, 80), // Limit to 80 chars
-        customerEmail: 'customer@example.com', // You might want to get this from the user
+        orderName,
+        customerEmail: order.email || 'customer@example.com',
         customerName: order.name,
         customerMobilePhone: order.phoneNumber,
-        successUrl: `${window.location.origin}/success`,
-        failUrl: `${window.location.origin}/fail`,
+        amount: finalAmount
+      });
+      
+      // 결제 요청
+      await widget.requestPayment({
+        orderId: order.orderId,
+        orderName,
+        customerEmail: order.email || 'customer@example.com',
+        customerName: order.name,
+        customerMobilePhone: order.phoneNumber,
+        successUrl: successUrl,
+        failUrl: failUrl,
         amount: finalAmount
       });
     } catch (error: any) {
-      console.error('Payment request failed:', error);
+      console.error('결제 요청 실패:', error);
       onPaymentFail(error.code || 'UNKNOWN', error.message || '결제 요청 중 오류가 발생했습니다.');
     }
   };

@@ -28,7 +28,7 @@ const CheckoutPage: React.FC = () => {
     mutationFn: createOrder,
     onSuccess: (data) => {
       setOrder(data);
-      // Order created successfully, now show payment widget
+
     },
     onError: (error) => {
       console.error('Failed to create order:', error);
@@ -62,27 +62,30 @@ const CheckoutPage: React.FC = () => {
       return;
     }
     
-    // Create order object
+    // 백엔드 요청에 맞는 주문 객체 생성
     const newOrder: Partial<Order> = {
       orderId: `ORDER_${uuidv4().substring(0, 8)}`,
       name: customerInfo.name,
       phoneNumber: customerInfo.phoneNumber,
+      email: 'customer@example.com', // email 필드 추가
       totalPrice: cart.totalPrice,
       status: OrderStatus.ORDER_COMPLETED,
       items: cart.items.map((item, index) => ({
         id: 0, // Backend will assign
-        itemIdx: index,
+        itemIdx: index + 1, // 1부터 시작 (백엔드 @Min(1) 제약조건 충족)
         productId: item.product.id,
         productName: item.product.name,
         price: item.product.price,
-        size: item.size,
+        size: item.size || 'FREE', // 기본값 FREE 제공
         amount: item.product.price * item.quantity,
         quantity: item.quantity,
         state: OrderStatus.ORDER_COMPLETED,
       })),
     };
-    
-    // Create order
+
+    console.log('주문 생성 요청:', newOrder);
+
+    // 주문 생성 요청
     createOrderMutation.mutate(newOrder);
   };
   

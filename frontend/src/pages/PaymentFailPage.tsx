@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { handlePaymentFailure } from '../services/paymentService';
 
 interface PaymentError {
   code: string;
@@ -11,13 +12,27 @@ const PaymentFailPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [error, setError] = useState<PaymentError>({ code: '', message: '' });
+  const [isProcessing, setIsProcessing] = useState(true);
   
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-    const code = urlParams.get('code') || 'UNKNOWN';
-    const message = urlParams.get('message') || '알 수 없는 오류가 발생했습니다.';
+    const processFailure = async () => {
+      try {
+        const urlParams = new URLSearchParams(location.search);
+        const code = urlParams.get('code') || 'UNKNOWN';
+        const message = urlParams.get('message') || '알 수 없는 오류가 발생했습니다.';
+        
+        setError({ code, message });
+        
+        // 백엔드에 실패 정보 전송
+        await handlePaymentFailure(message);
+      } catch (err) {
+        console.error('Error processing payment failure:', err);
+      } finally {
+        setIsProcessing(false);
+      }
+    };
     
-    setError({ code, message });
+    processFailure();
   }, [location.search]);
   
   // Get a user-friendly error message based on the error code
