@@ -1,0 +1,29 @@
+#payment-method-container {
+  min-height: 200px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+#agreement-container {
+  min-height: 100px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.payment-widget-container {
+  position: relative;
+}
+
+.card-payment-only {
+  margin-bottom: 12px;
+  padding: 12px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.card-payment-only p {
+  margin: 0;
+  font-size: 14px;
+  color: #4b5563;
+}

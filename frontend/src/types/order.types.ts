@@ -21,8 +21,8 @@ export interface PurchaseOrderItem {
   productId: string; // Java에서는 UUID 타입
   productName: string; // @NotBlank 조건을 만족해야 함
   price: number;
-  quantity: number; // Java 클래스에 맞춰 quantity로 변경
-  amount: number; // Java 클래스에도 있으므로 유지
+  quantity: number; // @Min(1) 조건을 만족해야 함
+  amounts: number; // 백엔드에서 기대하는 필드: 총 금액 (price * quantity)
   size?: string; // 선택적 필드 (백엔드에서는 기본값 "FREE" 설정)
 }
 

@@ -64,10 +64,9 @@ const CheckoutPage: React.FC = () => {
     
     // 백엔드 요청에 맞는 주문 객체 생성
     const newOrder: Partial<Order> = {
-      orderId: `ORDER_${uuidv4().substring(0, 8)}`,
       name: customerInfo.name,
       phoneNumber: customerInfo.phoneNumber,
-      email: 'customer@example.com', // email 필드 추가
+      // email 필드 제거 (백엔드 Orderer 클래스에 없음)
       totalPrice: cart.totalPrice,
       status: OrderStatus.ORDER_COMPLETED,
       items: cart.items.map((item, index) => ({
@@ -77,7 +76,7 @@ const CheckoutPage: React.FC = () => {
         productName: item.product.name,
         price: item.product.price,
         size: item.size || 'FREE', // 기본값 FREE 제공
-        amount: item.product.price * item.quantity,
+        amount: item.product.price * item.quantity, // 단일 아이템의 총 금액
         quantity: item.quantity,
         state: OrderStatus.ORDER_COMPLETED,
       })),

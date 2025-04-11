@@ -12,11 +12,11 @@ export const createOrder = async (order: Partial<Order>): Promise<Order> => {
     const purchaseOrderData = {
       orderer: {
         name: order.name || '',
-        phoneNumber: order.phoneNumber || '',
-        email: 'customer@example.com'
+        phoneNumber: order.phoneNumber || ''
+        // email 필드 제거 - 백엔드 Orderer 클래스에 없음
       },
       newlyOrderItem: order.items?.map((item, index) => {
-        // 문자열 ID를 유효한 UUID로 변환
+        // 문자열 ID를 유효한 UUID로 변환 (UUID 타입 변환 확인)
         const productUuid = ensureUuid(item.productId);
         console.log(`상품 ID 변환: ${item.productId} -> ${productUuid}`);
 
@@ -25,27 +25,50 @@ export const createOrder = async (order: Partial<Order>): Promise<Order> => {
           productId: productUuid,
           productName: item.productName,
           price: item.price,
-          quantity: item.quantity, // quantity 필드 사용
+          quantity: item.quantity, // 수량
           size: item.size || 'FREE',
-          amounts: item.quantity // amounts 필드도 추가 (백엔드에서 확인 필요)
+          amounts: item.price * item.quantity // amounts는 총 금액 (가격 * 수량)
         };
       }) || []
     };
 
     console.log('변환된 주문 데이터:', purchaseOrderData);
 
-    // API 호출 - axios 인스턴스를 통해 절대 경로 사용
-    const response = await apiService.post<any>('/api/orders/new', purchaseOrderData);
-    console.log('주문 생성 응답:', response);
+    // 요청 데이터 상세 로깅
+    console.log('요청 URL:', '/api/orders/new');
+    console.log('요청 데이터 (JSON):', JSON.stringify(purchaseOrderData, null, 2));
     
-    // 백엔드 응답 구조를 프론트엔드 Order 타입으로 변환
-    if (response && response.success && response.data) {
-      const frontendOrder = convertBackendOrderToFrontend(response.data);
-      console.log('변환된 프론트엔드 Order 객체:', frontendOrder);
-      return frontendOrder;
+    try {
+      // API 호출 - axios 인스턴스를 통해 절대 경로 사용
+      const response = await apiService.post<any>('/api/orders/new', purchaseOrderData);
+      console.log('응답 데이터:', response);
+      
+      // 백엔드 응답 구조를 프론트엔드 Order 타입으로 변환
+      if (response && response.success && response.data) {
+        const frontendOrder = convertBackendOrderToFrontend(response.data);
+        console.log('변환된 프론트엔드 Order 객체:', frontendOrder);
+        return frontendOrder;
+      }
+      
+      return response.data || response;
+    } catch (error) {
+      console.error('API 요청 에러:', error);
+      // 오류 발생 시 대체 URL로 시도
+      try {
+        console.log('대체 URL로 시도: /orders/new');
+        const alternativeResponse = await apiService.post<any>('/orders/new', purchaseOrderData);
+        console.log('대체 URL 응답:', alternativeResponse);
+        
+        if (alternativeResponse && alternativeResponse.success && alternativeResponse.data) {
+          return convertBackendOrderToFrontend(alternativeResponse.data);
+        }
+        
+        return alternativeResponse.data || alternativeResponse;
+      } catch (altError) {
+        console.error('대체 URL 요청 에러:', altError);
+        throw error; // 원래 에러를 다시 던짐
+      }
     }
-    
-    return response.data || response;
   } catch (error) {
     console.error('주문 생성 실패:', error);
     throw error;

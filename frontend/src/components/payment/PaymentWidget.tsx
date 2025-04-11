@@ -63,7 +63,7 @@ const PaymentWidget: React.FC<PaymentWidgetProps> = ({
             
             // 유효한 문자만 남기기
             key = key.replace(/[^a-zA-Z0-9\-_=.@]/g, '');
-            
+            console.log(key)
             // 길이 체크
             if (key.length < 2) {
               key = `customer-${Date.now()}`;
@@ -177,6 +177,7 @@ const PaymentWidget: React.FC<PaymentWidgetProps> = ({
       });
     } catch (error: any) {
       console.error('결제 요청 실패:', error);
+      console.log(error);
       onPaymentFail(error.code || 'UNKNOWN', error.message || '결제 요청 중 오류가 발생했습니다.');
     }
   };

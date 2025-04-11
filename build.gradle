@@ -9,7 +9,7 @@ plugins {
 	id "com.github.davidmc24.gradle.plugin.avro" version "1.3.0"
 }
 
-group = 'faddy'mam
+group = 'faddy'
 version = '0.0.1-SNAPSHOT'
 
 java {
