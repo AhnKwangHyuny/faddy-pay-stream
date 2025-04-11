@@ -41,7 +41,7 @@ public class PurchaseOrder {
             .quantity(item.getQuantity())
             .productName(item.getProductName())
             .price(item.getPrice())
-            .quantity(item.getAmounts())
+            .quantity(item.getQuantity())
             .size("FREE")
             .state(OrderStatus.ORDER_COMPLETED)
             .build();

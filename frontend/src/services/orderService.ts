@@ -7,7 +7,7 @@ import { ensureUuid } from '../utils/helpers';
 export const createOrder = async (order: Partial<Order>): Promise<Order> => {
   try {
     console.log('원본 주문 데이터:', order);
-    
+
     // PurchaseOrder 형식에 맞게 데이터 변환
     const purchaseOrderData = {
       orderer: {
@@ -37,19 +37,19 @@ export const createOrder = async (order: Partial<Order>): Promise<Order> => {
     // 요청 데이터 상세 로깅
     console.log('요청 URL:', '/api/orders/new');
     console.log('요청 데이터 (JSON):', JSON.stringify(purchaseOrderData, null, 2));
-    
+
     try {
       // API 호출 - axios 인스턴스를 통해 절대 경로 사용
       const response = await apiService.post<any>('/api/orders/new', purchaseOrderData);
       console.log('응답 데이터:', response);
-      
+
       // 백엔드 응답 구조를 프론트엔드 Order 타입으로 변환
       if (response && response.success && response.data) {
         const frontendOrder = convertBackendOrderToFrontend(response.data);
         console.log('변환된 프론트엔드 Order 객체:', frontendOrder);
         return frontendOrder;
       }
-      
+
       return response.data || response;
     } catch (error) {
       console.error('API 요청 에러:', error);
@@ -58,11 +58,11 @@ export const createOrder = async (order: Partial<Order>): Promise<Order> => {
         console.log('대체 URL로 시도: /orders/new');
         const alternativeResponse = await apiService.post<any>('/orders/new', purchaseOrderData);
         console.log('대체 URL 응답:', alternativeResponse);
-        
+
         if (alternativeResponse && alternativeResponse.success && alternativeResponse.data) {
           return convertBackendOrderToFrontend(alternativeResponse.data);
         }
-        
+
         return alternativeResponse.data || alternativeResponse;
       } catch (altError) {
         console.error('대체 URL 요청 에러:', altError);
@@ -109,13 +109,13 @@ interface BackendOrder {
 const convertToOrderStatus = (status: string): OrderStatus => {
   // OrderStatus에 해당하는 값이 있는지 확인
   const matchedStatus = Object.entries(OrderStatus).find(
-    ([key, value]) => value === status
+      ([key, value]) => value === status
   );
-  
+
   if (matchedStatus) {
     return matchedStatus[1] as OrderStatus;
   }
-  
+
   // 기본값으로 ORDER_COMPLETED 반환
   console.warn(`알 수 없는 주문 상태: ${status}, ORDER_COMPLETED로 기본 설정됨`);
   return OrderStatus.ORDER_COMPLETED;
@@ -125,7 +125,7 @@ const convertToOrderStatus = (status: string): OrderStatus => {
 const convertBackendOrderToFrontend = (backendOrder: BackendOrder): Order => {
   // 백엔드 status를 OrderStatus 열거형으로 변환
   const orderStatus = convertToOrderStatus(backendOrder.status);
-  
+
   return {
     orderId: backendOrder.orderId,
     // 중첩된 orderer 객체에서 필드 추출
@@ -138,10 +138,10 @@ const convertBackendOrderToFrontend = (backendOrder: BackendOrder): Order => {
     // items 배열 변환 (itemStatus → state)
     items: (backendOrder.items || []).map((item: BackendOrderItem) => {
       // 아이템 상태 변환
-      const itemStatus = item.itemStatus 
-        ? convertToOrderStatus(item.itemStatus) 
-        : orderStatus;
-        
+      const itemStatus = item.itemStatus
+          ? convertToOrderStatus(item.itemStatus)
+          : orderStatus;
+
       return {
         id: item.id || 0,
         itemIdx: item.itemIdx,
@@ -164,7 +164,7 @@ export const getOrderById = async (orderId: string): Promise<Order> => {
   try {
     console.log(`주문 조회: ${orderId}`);
     const response = await apiService.get<any>(`/api/orders/${orderId}`);
-    
+
     // 응답이 ApiResponse 형식인지 확인
     if (response && typeof response === 'object') {
       if ('success' in response && response.success === true && response.data) {
@@ -182,7 +182,7 @@ export const getOrderById = async (orderId: string): Promise<Order> => {
       // 다른 응답 형태
       return response;
     }
-    
+
     return response;
   } catch (error) {
     console.error(`주문 조회 실패: ${orderId}`, error);
@@ -213,8 +213,8 @@ export const cancelOrder = async (orderId: string): Promise<Order> => {
 
 // 주문 품목 취소
 export const cancelOrderItems = async (
-  orderId: string,
-  itemIdxs: number[]
+    orderId: string,
+    itemIdxs: number[]
 ): Promise<Order> => {
   try {
     return await apiService.post<Order>(`/api/orders/${orderId}/cancel-items`, { itemIdxs });

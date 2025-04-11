@@ -120,4 +120,15 @@ public class Order extends TimeBaseEntity {
         this.totalPrice = this.items.stream().map(OrderItem::calculateAmount).reduce(0, Integer::sum);
     }
 
+    @Override
+    public String toString() {
+        return "Order{" +
+            ", name='" + name + '\'' +
+            ", phoneNumber='" + phoneNumber + '\'' +
+            ", paymentId='" + paymentId + '\'' +
+            ", totalPrice=" + totalPrice +
+            ", status=" + status +
+            ", items=" + items +
+            '}';
+    }
 }

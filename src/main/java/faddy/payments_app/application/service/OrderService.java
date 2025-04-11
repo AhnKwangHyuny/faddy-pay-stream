@@ -21,7 +21,7 @@ public class OrderService implements CreateNewOrderUseCase, GetOrderInfoUseCase 
     public Order createOrder(PurchaseOrder newOrder) throws Exception {
 
         Order order = newOrder.toEntity();
-
+        System.out.println(order.toString());
         return orderRepository.save(order);
 
     }
