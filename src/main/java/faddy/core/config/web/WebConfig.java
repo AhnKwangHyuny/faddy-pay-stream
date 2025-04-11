@@ -11,16 +11,17 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        // 구체적인 도메인 설정 - 와일드카드 대신 명시적 도메인
         registry.addMapping("/**")
-            .allowedOriginPatterns(
-                "http://localhost:*",       // 모든 localhost 포트
-                "http://127.0.0.1:*",       // 모든 127.0.0.1 포트
-                "http://192.168.*.*:*",     // 로컬 네트워크 192.168.x.x
-                "http://172.16.*.*:*",      // 로컬 네트워크 172.16.x.x
-                "http://10.*.*.*:*"         // 로컬 네트워크 10.x.x.x
+            .allowedOrigins(
+                "http://localhost:3000",
+                "http://localhost:8080",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:8080"
             )
             .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
             .allowedHeaders("*")
+            .exposedHeaders("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials")
             .allowCredentials(true)
             .maxAge(3600);
     }

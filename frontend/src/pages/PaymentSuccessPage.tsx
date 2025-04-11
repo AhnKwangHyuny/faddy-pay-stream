@@ -17,6 +17,7 @@ const PaymentSuccessPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [processedPaymentKey, setProcessedPaymentKey] = useState<string | null>(null);
   
   // 결제 승인 요청 뮤테이션
   const confirmPaymentMutation = useMutation({
@@ -90,6 +91,15 @@ const PaymentSuccessPage: React.FC = () => {
           throw new Error('필수 결제 정보가 누락되었습니다.');
         }
         
+        // 이미 처리된 결제인지 확인
+        if (processedPaymentKey === paymentKey) {
+          console.log('이미 처리된 결제입니다:', paymentKey);
+          return;
+        }
+        
+        // 처리할 결제 키 저장
+        setProcessedPaymentKey(paymentKey);
+        
         // 백엔드에 결제 승인 요청
         confirmPaymentMutation.mutate({
           paymentKey,
@@ -104,7 +114,7 @@ const PaymentSuccessPage: React.FC = () => {
     };
     
     processPayment();
-  }, [location.search, confirmPaymentMutation, navigate]);
+  }, [location.search, navigate, processedPaymentKey]); // confirmPaymentMutation 의존성 제거
   
   if (isLoading) {
     return (

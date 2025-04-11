@@ -57,8 +57,9 @@ spring:
 
 pg:
   tosspayments:
-    baseUrl: "https://api.tosspayments.com/"
-    privateKey: "test_sk_26DlbXAaV06m2mEvvqx18qY50Q9R"
+    baseUrl: "https://api.tosspayments.com/v1/"
+    privateKey: "test_sk_D4yKeq5bgrpKRd0JYbLVGX0lzW6Y:"
+    clientKey: "test_ck_ex6BJGQOVD9lxQ2E1DokrW4w2zNb"
 
 my:
   name: hyun_dev
@@ -106,8 +107,9 @@ spring:
 
 pg:
   tosspayments:
-    baseUrl: "https://api.tosspayments.com/"
-    privateKey: "test_sk_26DlbXAaV06m2mEvvqx18qY50Q9R"
+    baseUrl: "https://api.tosspayments.com/v1/"
+    privateKey: "test_sk_26DlbXAaV06m2mEvvqx18qY50Q9R:"
+    clientKey: "test_ck_ex6BJGQOVD9lxQ2E1DokrW4w2zNb"
 
 my:
   name: hyun_dev
@@ -155,8 +157,9 @@ spring:
 
 pg:
   tosspayments:
-    baseUrl: "https://api.tosspayments.com/"
-    privateKey: "test_sk_26DlbXAaV06m2mEvvqx18qY50Q9R"
+    baseUrl: "https://api.tosspayments.com/v1/"
+    privateKey: "test_sk_D4yKeq5bgrpKRd0JYbLVGX0lzW6Y:"
+    clientKey: "test_ck_ex6BJGQOVD9lxQ2E1DokrW4w2zNb"
 
 my:
   name: hyun_dev2

@@ -31,7 +31,7 @@ public class ResponseWrapper implements ResponseBodyAdvice<Object> {
 
         log.info("execute AOP - beforeBodyWrite");
         if (body instanceof ErrorResponse)
-            return new ApiResponse<>("ERROR", body);
-        return new ApiResponse<>("SUCCESS", body);
+            return ApiResponse.fail("ERROR" , body);
+        return ApiResponse.success(body);
     }
 }

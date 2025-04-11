@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -40,6 +41,8 @@ public class PaymentService implements PaymentFullfillUseCase, GetPaymentInfoUse
 
     private final Map<String, TransactionTypeRepository> transactionTypeRepositories = new HashMap<>();
     private TransactionTypeRepository transactionTypeRepository;
+    private final Map<String, Boolean> processedPayments = new ConcurrentHashMap<>();
+
 
     @PostConstruct
     public void init() {
@@ -65,22 +68,42 @@ public class PaymentService implements PaymentFullfillUseCase, GetPaymentInfoUse
     @Transactional
     @Override
     public String paymentApproved(PaymentApproved paymentInfo) throws IOException {
-        verifyOrderIsCompleted(UUID.fromString(paymentInfo.getOrderId()));
-        ResponsePaymentApproved response = tossPayment.requestPaymentApprove(paymentInfo);
-
-        if(tossPayment.isPaymentApproved(response.getStatus())) {
-            Order completedOrder = orderRepository.findById(UUID.fromString(response.getOrderId()));
-            completedOrder.orderPaymentFullFill(response.getPaymentKey());
-
-            paymentLedgerRepository.save(response.toPaymentTransactionEntity());
-            PaymentMethod method = PaymentMethod.fromMethodName(response.getMethod());
-            initTransactionTypeRepository(method);
-            transactionTypeRepository.save(TransactionType.convertToTransactionType(response));
-
+        String paymentKey = paymentInfo.getPaymentKey();
+        // 먼저 결제된 데이터인지 확인
+        if (processedPayments.containsKey(paymentKey)) {
+            log.info("Payment already processed (from cache): {}", paymentKey);
             return "success";
         }
 
-        return "fail";
+        try {
+            verifyOrderIsCompleted(UUID.fromString(paymentInfo.getOrderId()));
+            ResponsePaymentApproved response = tossPayment.requestPaymentApprove(paymentInfo);
+
+            if(tossPayment.isPaymentApproved(response.getStatus())) {
+                // 기존 로직 실행...
+                Order completedOrder = orderRepository.findById(UUID.fromString(response.getOrderId()));
+                completedOrder.orderPaymentFullFill(response.getPaymentKey());
+
+                paymentLedgerRepository.save(response.toPaymentTransactionEntity());
+                PaymentMethod method = PaymentMethod.fromMethodName(response.getMethod());
+
+                initTransactionTypeRepository(method);
+                transactionTypeRepository.save(TransactionType.convertToTransactionType(response));
+
+                // 캐시에 저장
+                processedPayments.put(paymentKey, true);
+                return "success";
+            }
+            return "fail";
+
+        } catch (IOException e) {
+            // 토스 API에서 이미 처리된 결제라고 응답하는 경우도 처리
+            if (e.getMessage().contains("ALREADY_PROCESSED_PAYMENT")) {
+                processedPayments.put(paymentKey, true);
+                return "success";
+            }
+            throw e;
+        }
     }
 
     public void verifyOrderIsCompleted(UUID orderId) {

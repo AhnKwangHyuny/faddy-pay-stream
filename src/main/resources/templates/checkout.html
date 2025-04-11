@@ -2,14 +2,11 @@
 <html lang="ko">
 <head>
     <meta charset="utf-8"/>
-    <link
-            rel="icon"
-            href="https://static.toss.im/icons/png/4x/icon-toss-logo.png"
-    />
+    <link rel="icon" href="https://static.toss.im/icons/png/4x/icon-toss-logo.png" />
     <link rel="stylesheet" type="text/css" href="/styles/style.css"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>토스페이먼츠 샘플 프로젝트</title>
+    <title>토스페이먼츠 결제</title>
     <!-- 결제위젯 SDK 추가 -->
     <script src="https://js.tosspayments.com/v1/payment-widget"></script>
 </head>
@@ -17,105 +14,179 @@
 <body>
 <!-- 주문서 영역 -->
 <div class="wrapper">
-    <div
-            class="box_section"
-            style="
-          padding: 40px 30px 50px 30px;
-          margin-top: 30px;
-          margin-bottom: 50px;
-        "
-    >
+    <div class="box_section" style="padding: 40px 30px 50px 30px; margin-top: 30px; margin-bottom: 50px;">
+        <h2 style="margin-bottom: 20px;">결제 정보</h2>
+        
         <!-- 결제 UI -->
         <div id="payment-method"></div>
+        
         <!-- 이용약관 UI -->
         <div id="agreement"></div>
+        
         <!-- 쿠폰 체크박스 -->
-        <div style="padding-left: 25px">
+        <div style="padding-left: 25px; margin-top: 15px;">
             <div class="checkable typography--p">
-                <label for="coupon-box" class="checkable__label typography--regular"
-                ><input
-                        id="coupon-box"
-                        class="checkable__input"
-                        type="checkbox"
-                        aria-checked="true"
-                /><span class="checkable__label-text"
-                >5,000원 쿠폰 적용</span
-                ></label
-                >
+                <label for="coupon-box" class="checkable__label typography--regular">
+                    <input id="coupon-box" class="checkable__input" type="checkbox" />
+                    <span class="checkable__label-text">5,000원 쿠폰 적용</span>
+                </label>
             </div>
         </div>
+        
+        <!-- 주문 요약 -->
+        <div style="margin-top: 30px; background-color: #f8f9fa; padding: 15px; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span style="font-weight: 500;">상품 금액</span>
+                <span id="original-amount"></span>
+            </div>
+            <div id="coupon-section" style="display: none; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-weight: 500;">쿠폰 할인</span>
+                    <span style="color: #f03e3e;">-5,000원</span>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #dee2e6;">
+                <span style="font-weight: 700;">최종 결제 금액</span>
+                <span id="final-amount" style="font-weight: 700;"></span>
+            </div>
+        </div>
+        
         <!-- 결제하기 버튼 -->
         <div class="result wrapper">
-            <button class="button" id="payment-button" style="margin-top: 30px">
-                결제하기
+            <button class="button" id="payment-button" style="margin-top: 30px; width: 100%;">
+                <span id="payment-button-amount">결제하기</span>
             </button>
         </div>
     </div>
 </div>
-<!--
-http://localhost:8080/payment/checkout.html?orderId=0f568795-0678-41f0-a385-11d6e4a077b3&userId=fastcamp-y&ordererName=유진호&ordererPhoneNumber=010-1234-1234&orderName=속이편한우유&amount=3400
--->
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const orderId = urlParams.get("orderId"); // 주문ID
-    const ordererName = urlParams.get("ordererName");
-    const ordererPhoneNumber = urlParams.get("ordererPhoneNumber");
-    const orderedProductsName = urlParams.get("orderName"); // 주문된 상품명
-    const amount = urlParams.get("amount"); // 결제 금액
 
+<script>
+    // URL 파라미터 추출
+    const urlParams = new URLSearchParams(window.location.search);
+    const pathSegments = window.location.pathname.split('/');
+    
+    // URL 경로에서 주문 ID 추출 (path variable로 전달된 경우)
+    // URL 파라미터에 orderId가 있으면 그것을 사용, 없으면 path에서 추출
+    let orderId = urlParams.get("orderId");
+    if (!orderId) {
+        orderId = pathSegments[pathSegments.length - 1];
+        if (orderId === 'checkout.html' || orderId === 'checkout') {
+            orderId = ""; // 유효한 주문 ID가 없음
+        }
+    }
+    
+    // URL 파라미터로 전달된 값 모두 획득
+    const ordererName = urlParams.get("ordererName") || "고객님";
+    const ordererPhoneNumber = urlParams.get("ordererPhoneNumber") || "010-0000-0000";
+    const orderName = urlParams.get("orderName") || "주문 상품";
+    let amount = parseInt(urlParams.get("amount") || "0", 10);
+    const userId = urlParams.get("userId") || "anonymous";
+    
+    // 주문 금액이 없는 경우 기본값 설정
+    if (amount === 0 && orderId) {
+        amount = 1322000; // 기본값 또는 서버에서 가져온 값
+    }
+    
+    // 금액 표시 업데이트
+    document.getElementById("original-amount").textContent = amount.toLocaleString() + "원";
+    document.getElementById("final-amount").textContent = amount.toLocaleString() + "원";
+    document.getElementById("payment-button-amount").textContent = amount.toLocaleString() + "원 결제하기";
+    
+    let finalAmount = amount;
     const button = document.getElementById("payment-button");
     const coupon = document.getElementById("coupon-box");
-    const generateRandomString = () =>
-        window.btoa(Math.random()).slice(0, 20);
-    // const amount = 100;
+    const couponSection = document.getElementById("coupon-section");
+    
     // ------  결제위젯 초기화 ------
-    // TODO: clientKey는 개발자센터의 결제위젯 연동 키 > 클라이언트 키로 바꾸세요.
-    // TODO: 구매자의 고유 아이디를 불러와서 customerKey로 설정하세요. 이메일・전화번호와 같이 유추가 가능한 값은 안전하지 않습니다.
-    // @docs https://docs.tosspayments.com/reference/widget-sdk#sdk-설치-및-초기화
-    // const widgetClientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
-    const widgetClientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
-    const customerKey = urlParams.get("userId");
-    const paymentWidget = PaymentWidget(widgetClientKey, customerKey); // 회원 결제
-    // const paymentWidget = PaymentWidget(widgetClientKey, PaymentWidget.ANONYMOUS); // 비회원 결제
-
+    const widgetClientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm"; // 테스팅 키
+    const customerKey = userId + "-" + (orderId || "anonymous");
+    console.log("Customer Key:", customerKey);
+    const paymentWidget = PaymentWidget(widgetClientKey, customerKey);
+    
     // ------  결제 UI 렌더링 ------
-    // @docs https://docs.tosspayments.com/reference/widget-sdk#renderpaymentmethods선택자-결제-금액-옵션
-    paymentMethodWidget = paymentWidget.renderPaymentMethods(
+    const paymentMethodWidget = paymentWidget.renderPaymentMethods(
         "#payment-method",
-        {value: amount},
-        // 렌더링하고 싶은 결제 UI의 variantKey
-        // 결제 수단 및 스타일이 다른 멀티 UI를 직접 만들고 싶다면 계약이 필요해요.
-        // @docs https://docs.tosspayments.com/guides/payment-widget/admin#멀티-결제-ui
-        {variantKey: "DEFAULT"}
+        { value: amount },
+        { variantKey: "DEFAULT" }
     );
+    
     // ------  이용약관 UI 렌더링 ------
-    // @docs https://docs.tosspayments.com/reference/widget-sdk#renderagreement선택자-옵션
-    paymentWidget.renderAgreement("#agreement", {variantKey: "AGREEMENT"});
-
+    paymentWidget.renderAgreement("#agreement", { variantKey: "AGREEMENT" });
+    
     // ------  결제 금액 업데이트 ------
-    // @docs https://docs.tosspayments.com/reference/widget-sdk#updateamount결제-금액
     coupon.addEventListener("change", function () {
-        if (coupon.checked) {
-            paymentMethodWidget.updateAmount(amount - 5000);
-        } else {
-            paymentMethodWidget.updateAmount(amount);
-        }
+        const discount = this.checked ? 5000 : 0;
+        finalAmount = amount - discount;
+        
+        // 화면 업데이트
+        document.getElementById("final-amount").textContent = finalAmount.toLocaleString() + "원";
+        document.getElementById("payment-button-amount").textContent = finalAmount.toLocaleString() + "원 결제하기";
+        couponSection.style.display = this.checked ? "block" : "none";
+        
+        // 결제 위젯 금액 업데이트
+        paymentMethodWidget.updateAmount(finalAmount);
     });
-
+    
     // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
-    // @docs https://docs.tosspayments.com/reference/widget-sdk#requestpayment결제-정보
     button.addEventListener("click", function () {
-        // 결제를 요청하기 전에 orderId, amount를 서버에 저장하세요.
-        // 결제 과정에서 악의적으로 결제 금액이 바뀌는 것을 확인하는 용도입니다.
-        paymentWidget.requestPayment({
-            orderId: orderId, // 주문ID
-            orderName: orderedProductsName, // 주문된 상품명
-            successUrl: window.location.origin + "/success",
-            failUrl: window.location.origin + "/fail",
-            customerEmail: "fastcamp-y@gmail.com",
+        // 모든 입력 정보 콘솔에 출력 (디버깅용)
+        console.log("결제 요청 정보:", {
+            orderId: orderId,
+            orderName: orderName,
+            customerEmail: "customer@example.com",
             customerName: ordererName,
             customerMobilePhone: ordererPhoneNumber,
+            amount: finalAmount,
+            successUrl: window.location.origin + "/success",
+            failUrl: window.location.origin + "/fail"
         });
+        
+        // 유효성 검사
+        if (!orderId) {
+            alert("주문 ID가 없습니다. 처음부터 다시 시도해주세요.");
+            return;
+        }
+        
+        if (finalAmount <= 0) {
+            alert("결제 금액이 올바르지 않습니다.");
+            return;
+        }
+        
+        try {
+            // 결제 요청
+            paymentWidget.requestPayment({
+                orderId: orderId,
+                orderName: orderName,
+                successUrl: window.location.origin + "/success",
+                failUrl: window.location.origin + "/fail",
+                customerEmail: "customer@example.com",
+                customerName: ordererName,
+                customerMobilePhone: ordererPhoneNumber,
+                amount: finalAmount
+            }).catch(function(error) {
+                console.error("결제 요청 실패:", error);
+                
+                if (error.code === "NOT_SELECTED_PAYMENT_METHOD") {
+                    alert("결제수단을 선택해 주세요.");
+                } else if (error.code === "INVALID_ORDER_ID") {
+                    alert("주문 ID가 올바르지 않습니다: " + orderId);
+                } else {
+                    alert("결제 요청 중 오류가 발생했습니다: " + (error.message || "알 수 없는 오류"));
+                }
+            });
+        } catch (e) {
+            console.error("결제 요청 예외 발생:", e);
+            alert("결제 초기화 중 오류가 발생했습니다: " + e.message);
+        }
+    });
+    
+    // 디버깅을 위한 콘솔 로그
+    console.log("주문 정보:", {
+        orderId,
+        ordererName,
+        ordererPhoneNumber,
+        orderName,
+        amount: finalAmount
     });
 </script>
 </body>

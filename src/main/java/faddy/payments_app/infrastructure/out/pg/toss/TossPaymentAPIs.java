@@ -13,13 +13,13 @@ import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 public interface TossPaymentAPIs {
-    @POST("payments/confirm")
+    @POST("v1/payments/confirm")
     Call<ResponsePaymentApproved> paymentFullfill(@Body PaymentApproved requestMessage);
 
-    @POST("payments/{paymentKey}/cancel")
+    @POST("v1/payments/{paymentKey}/cancel")
     Call<ResponsePaymentCancel> paymentCancel(@Path("paymentKey") String paymentKey, @Body PaymentCancel requestMessage);
 
-    @GET("settlements")
+    @GET("v1/settlements")
     Call<List<ResponsePaymentSettlements>> paymentSettlements(@Path("startDate") String startDate,
         @Path("endDate") String endDate,
         @Path("page") int page,

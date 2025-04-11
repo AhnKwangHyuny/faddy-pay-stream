@@ -17,8 +17,17 @@ const AppRoutes: React.FC = () => {
         <Route path="products/:id" element={<ProductDetailPage />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="checkout" element={<CheckoutPage />} />
+        {/* 결제 성공/실패 리다이렉트 경로 추가 */}
+        <Route path="payment-success" element={<PaymentSuccessPage />} />
+        <Route path="payment-fail" element={<PaymentFailPage />} />
+        
+        {/* 토스페이먼츠 콜백용 경로도 동일한 컴포넌트로 렌더링 */}
         <Route path="success" element={<PaymentSuccessPage />} />
         <Route path="fail" element={<PaymentFailPage />} />
+        
+        {/* 백엔드 API 엔드포인트와 충돌하는 경로는 리다이렉트 처리 */}
+        <Route path="confirm" element={<Navigate to="/" replace />} />
+        
         <Route path="orders" element={<OrderHistoryPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

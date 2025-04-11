@@ -16,15 +16,27 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 @Configuration
 @Slf4j
 public class TossApiClientConfig {
-    private static final String BASE_URL = "Https://api.tosspayments.com/v1/";
-    private static final String SECRET_KEY = "test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6:"; // 테스팅 키
+    private final String baseUrl;
+    private final String secretKey;
+
+    public TossApiClientConfig(org.springframework.core.env.Environment env) {
+        this.baseUrl = env.getProperty("pg.tosspayments.baseUrl");
+        this.secretKey = env.getProperty("pg.tosspayments.privateKey");
+        
+        log.info("Toss API initialized with baseUrl: {}", baseUrl);
+        log.info("Property names for reference - baseUrl: pg.tosspayments.baseUrl, secretKey: pg.tosspayments.privateKey");
+    }
 
     @Bean
     public OkHttpClient okHttpClient() {
+        // 시크릿 키 로깅 (트러블슈팅용)
+        log.info("Using secretKey: {}", secretKey);
+        
+        // 시크릿 키는 이미 콜론이 포함되어 있으므로 추가로 붙이지 않음
         Base64.Encoder encoder = Base64.getEncoder();
-        byte[] encodedBytes = encoder.encode((SECRET_KEY + ":").getBytes(StandardCharsets.UTF_8));
+        byte[] encodedBytes = encoder.encode(secretKey.getBytes(StandardCharsets.UTF_8));
         String authorizations = "Basic " + new String(encodedBytes);
-        log.info("key: {}", authorizations);
+        log.info("Authorization key format: Basic [Base64-encoded-secret-key]");
 
         return new OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)
@@ -44,7 +56,7 @@ public class TossApiClientConfig {
         objectMapper.registerModule(new JavaTimeModule());
 
         return new Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .addConverterFactory(JacksonConverterFactory.create(objectMapper))
             .client(okHttpClient)
             .build();

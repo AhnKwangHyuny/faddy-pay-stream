@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 
 public class NewPurchaseOrderDto {
-    private final UUID orderId;
+    private final String orderId; // UUID를 String으로 변환
 
     private final Orderer orderer;
 
@@ -27,7 +27,7 @@ public class NewPurchaseOrderDto {
     @Getter
     private List<NewPurchaseOrderItemDto> items = new ArrayList<>();
 
-    private NewPurchaseOrderDto(UUID id, String name, String phoneNumber, String paymentId, int totalPrice, OrderStatus status, List<OrderItem> items) {
+    private NewPurchaseOrderDto(String id, String name, String phoneNumber, String paymentId, int totalPrice, OrderStatus status, List<OrderItem> items) {
         this.orderId = id;
         this.orderer = new Orderer(name, phoneNumber);
         this.paymentId = paymentId;
@@ -38,7 +38,15 @@ public class NewPurchaseOrderDto {
 
     public static NewPurchaseOrderDto from(Order order) { //PurchaseOrderDto -> NewOrderDto
         log.info("orderItems -> {}", order.getItems());
-        return new NewPurchaseOrderDto(order.getOrderId(), order.getName(), order.getPhoneNumber(), order.getPaymentId(), order.getTotalPrice(),
-            order.getStatus(), order.getItems());
+        // UUID를 문자열로 변환하여 전달
+        return new NewPurchaseOrderDto(
+            order.getOrderId().toString(), 
+            order.getName(), 
+            order.getPhoneNumber(), 
+            order.getPaymentId(), 
+            order.getTotalPrice(),
+            order.getStatus(), 
+            order.getItems()
+        );
     }
 }
