@@ -193,11 +193,33 @@ export const getOrderById = async (orderId: string): Promise<Order> => {
 // 주문 내역 조회
 export const getOrderHistory = async (): Promise<Order[]> => {
   try {
-    return await apiService.get<Order[]>('/api/orders/history');
+    // 백엔드 API 경로 수정
+    const response = await apiService.get<any>('/api/orders');
+    
+    // 응답 구조 확인 및 변환
+    if (response && response.success && Array.isArray(response.data)) {
+      // 백엔드 응답을 프론트엔드 형식으로 변환
+      return response.data.map((order: any) => convertBackendOrderToFrontend(order));
+    }
+    
+    // 응답 형식이 다른 경우 빈 배열 반환
+    console.warn('주문 내역 응답 형식이 예상과 다릅니다:', response);
+    return [];
   } catch (error) {
     console.error('주문 내역 조회 실패:', error);
-    // 오류 발생 시 빈 배열 반환
-    return [];
+    
+    // 백업 경로로 시도
+    try {
+      console.log('백업 경로로 시도: /api/orders (다른 경로)');
+      const fallbackResponse = await apiService.get<any>('/api/orders');
+      if (fallbackResponse && Array.isArray(fallbackResponse)) {
+        return fallbackResponse.map((order: any) => convertBackendOrderToFrontend(order));
+      }
+      return [];
+    } catch (fallbackError) {
+      console.error('백업 경로도 실패:', fallbackError);
+      return [];
+    }
   }
 };
 

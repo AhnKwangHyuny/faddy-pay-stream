@@ -255,7 +255,15 @@ const PaymentSuccessPage: React.FC = () => {
           쇼핑 계속하기
         </button>
         <button
-          onClick={() => navigate('/orders')}
+          onClick={() => {
+            console.log('주문 내역 페이지로 이동합니다.');
+            // 브라우저 콘솔에 정보 출력 (디버깅용)
+            console.log('현재 경로:', window.location.href);
+            console.log('이동할 경로:', `${window.location.origin}/orders`);
+            
+            // React Router의 navigate를 사용하여 이동
+            navigate('/orders', { replace: true });
+          }}
           className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800"
         >
           주문 내역 보기
