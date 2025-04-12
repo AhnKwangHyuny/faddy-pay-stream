@@ -69,6 +69,9 @@ public class PaymentService implements PaymentFullfillUseCase, GetPaymentInfoUse
     @Override
     public String paymentApproved(PaymentApproved paymentInfo) throws IOException {
         String paymentKey = paymentInfo.getPaymentKey();
+        
+        log.info("Payment approval request received: {}", paymentInfo);
+        
         // 먼저 결제된 데이터인지 확인
         if (processedPayments.containsKey(paymentKey)) {
             log.info("Payment already processed (from cache): {}", paymentKey);
@@ -76,33 +79,74 @@ public class PaymentService implements PaymentFullfillUseCase, GetPaymentInfoUse
         }
 
         try {
-            verifyOrderIsCompleted(UUID.fromString(paymentInfo.getOrderId()));
+            // 주문 상태 확인 로직을 try-catch로 감싸서 디버깅 정보 제공
+            try {
+                verifyOrderIsCompleted(UUID.fromString(paymentInfo.getOrderId()));
+            } catch (Exception e) {
+                log.error("Order verification failed: {}", e.getMessage());
+                return "fail";
+            }
+            
+            // 결제 승인 요청 전 로깅
+            log.info("Requesting payment approval to payment provider: {}", paymentInfo);
+            
             ResponsePaymentApproved response = tossPayment.requestPaymentApprove(paymentInfo);
+            log.info("Payment provider response: {}", response);
 
             if(tossPayment.isPaymentApproved(response.getStatus())) {
-                // 기존 로직 실행...
-                Order completedOrder = orderRepository.findById(UUID.fromString(response.getOrderId()));
-                completedOrder.orderPaymentFullFill(response.getPaymentKey());
+                try {
+                    // 기존 로직 실행...
+                    Order completedOrder = orderRepository.findById(UUID.fromString(response.getOrderId()));
+                    completedOrder.orderPaymentFullFill(response.getPaymentKey());
 
-                paymentLedgerRepository.save(response.toPaymentTransactionEntity());
-                PaymentMethod method = PaymentMethod.fromMethodName(response.getMethod());
+                    // 결제 원장 저장 - 필수 단계
+                    paymentLedgerRepository.save(response.toPaymentTransactionEntity());
+                    
+                    try {
+                        // 결제 방식별 상세 정보 저장 - 선택적 단계 (실패해도 전체 결제는 성공으로 처리)
+                        PaymentMethod method = PaymentMethod.fromMethodName(response.getMethod());
+                        
+                        // 결제 방식별 저장소 초기화
+                        try {
+                            initTransactionTypeRepository(method);
+                            TransactionType transactionData = TransactionType.convertToTransactionType(response);
+                            transactionTypeRepository.save(transactionData);
+                            log.info("Transaction type data saved successfully: {}", method);
+                        } catch (Exception e) {
+                            // 트랜잭션 타입 변환/저장 실패는 무시하고 진행
+                            log.warn("Failed to save transaction type data: {}. Error: {}", 
+                                    method, e.getMessage());
+                            log.debug("Transaction type error details:", e);
+                        }
+                    } catch (Exception e) {
+                        // 결제 방식 처리 실패는 무시하고 진행
+                        log.warn("Payment method processing failed: {}", e.getMessage());
+                    }
 
-                initTransactionTypeRepository(method);
-                transactionTypeRepository.save(TransactionType.convertToTransactionType(response));
-
-                // 캐시에 저장
-                processedPayments.put(paymentKey, true);
-                return "success";
+                    // 캐시에 저장
+                    processedPayments.put(paymentKey, true);
+                    log.info("Payment approval successfully processed: {}", paymentKey);
+                    return "success";
+                } catch (Exception e) {
+                    log.error("Error while processing successful payment: {}", e.getMessage(), e);
+                    return "fail";
+                }
             }
+            log.warn("Payment not approved by provider. Status: {}", response.getStatus());
             return "fail";
 
         } catch (IOException e) {
             // 토스 API에서 이미 처리된 결제라고 응답하는 경우도 처리
             if (e.getMessage().contains("ALREADY_PROCESSED_PAYMENT")) {
+                log.info("Payment was already processed according to provider: {}", paymentKey);
                 processedPayments.put(paymentKey, true);
                 return "success";
             }
+            log.error("IO Exception during payment approval: {}", e.getMessage(), e);
             throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error during payment approval: {}", e.getMessage(), e);
+            return "fail";
         }
     }
 

@@ -3,10 +3,12 @@ spring:
     name: "faddy-payments-app"
 
   datasource:
-    url: jdbc:mysql://localhost:13306/faddy_labs?serverTimezone=UTC&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:13306/faddy_labs?serverTimezone=UTC&characterEncoding=UTF-8&useUnicode=true
     username: faddy
     password: testlabs
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connectionInitSql: SET NAMES utf8mb4
 
   thymeleaf:
     cache: false
@@ -57,9 +59,9 @@ spring:
 
 pg:
   tosspayments:
-    baseUrl: "https://api.tosspayments.com/v1/"
-    privateKey: "test_sk_D4yKeq5bgrpKRd0JYbLVGX0lzW6Y:"
-    clientKey: "test_ck_ex6BJGQOVD9lxQ2E1DokrW4w2zNb"
+    baseUrl: "https://api.tosspayments.com/v1"
+    privateKey: "test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6"
+    clientKey: "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm"
 
 my:
   name: hyun_dev

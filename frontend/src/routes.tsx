@@ -10,6 +10,10 @@ import PaymentFailPage from './pages/PaymentFailPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 
 const AppRoutes: React.FC = () => {
+  // 현재 실행 중인 URL 확인
+  const baseUrl = window.location.origin;
+  console.log("Application running at:", baseUrl);
+  
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
@@ -17,11 +21,12 @@ const AppRoutes: React.FC = () => {
         <Route path="products/:id" element={<ProductDetailPage />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="checkout" element={<CheckoutPage />} />
-        {/* 결제 성공/실패 리다이렉트 경로 추가 */}
+        
+        {/* 결제 관련 경로들 */}
         <Route path="payment-success" element={<PaymentSuccessPage />} />
         <Route path="payment-fail" element={<PaymentFailPage />} />
         
-        {/* 토스페이먼츠 콜백용 경로도 동일한 컴포넌트로 렌더링 */}
+        {/* 토스페이먼츠 콜백용 경로도 명시적으로 정의 */}
         <Route path="success" element={<PaymentSuccessPage />} />
         <Route path="fail" element={<PaymentFailPage />} />
         
@@ -29,6 +34,8 @@ const AppRoutes: React.FC = () => {
         <Route path="confirm" element={<Navigate to="/" replace />} />
         
         <Route path="orders" element={<OrderHistoryPage />} />
+        
+        {/* 모든 undefined 경로는 홈으로 리다이렉트 */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

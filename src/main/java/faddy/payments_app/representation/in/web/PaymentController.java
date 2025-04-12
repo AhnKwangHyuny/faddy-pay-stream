@@ -61,6 +61,22 @@ public class PaymentController {
         
         return new ModelAndView("redirect:" + redirectUrl);
     }
+    
+    // 결제 성공 후 API 호출을 위한 새 엔드포인트 (프론트엔드에서 POST로 호출)
+    @PostMapping("/api/payments/success")
+    public ResponseEntity<ApiResponse<String>> apiPaymentSuccess(@RequestBody Map<String, Object> successData) {
+        String paymentKey = (String) successData.get("paymentKey");
+        String orderId = (String) successData.get("orderId");
+        Integer amount = (Integer) successData.get("amount");
+        String paymentType = successData.get("paymentType") != null ? 
+                            (String) successData.get("paymentType") : "CARD";
+        
+        log.info("API Payment success - orderId: {}, paymentKey: {}, amount: {}, type: {}", 
+                orderId, paymentKey, amount, paymentType);
+        
+        // 성공 응답 반환
+        return ResponseEntity.ok(ApiResponse.success("Payment success acknowledged"));
+    }
 
     // 토스페이먼츠 결제 위젯에서 호출하는 실패 URL
     @GetMapping("/fail")
@@ -80,12 +96,20 @@ public class PaymentController {
     @PostMapping("/confirm")
     public ResponseEntity<ApiResponse<String>> paymentConfirm(@RequestBody PaymentApproved paymentInfo) throws IOException {
         log.info("Payment confirmation request: {}", paymentInfo.toString());
-        String result = paymentFullfillUseCase.paymentApproved(paymentInfo);
         
-        if ("success".equals(result)) {
-            return ResponseEntity.ok(ApiResponse.success(result));
-        } else {
-            return ResponseEntity.badRequest().body(ApiResponse.fail("결제 승인에 실패했습니다."));
+        try {
+            String result = paymentFullfillUseCase.paymentApproved(paymentInfo);
+            
+            if ("success".equals(result)) {
+                log.info("Payment confirmation successful for: {}", paymentInfo.getPaymentKey());
+                return ResponseEntity.ok(ApiResponse.success(result));
+            } else {
+                log.warn("Payment confirmation failed for: {}", paymentInfo.getPaymentKey());
+                return ResponseEntity.badRequest().body(ApiResponse.fail("결제 승인에 실패했습니다."));
+            }
+        } catch (Exception e) {
+            log.error("Error during payment confirmation: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(ApiResponse.fail("결제 처리 중 오류가 발생했습니다: " + e.getMessage()));
         }
     }
     

@@ -1,5 +1,6 @@
 package faddy.payments_app.infrastructure.out.pg.toss;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faddy.payments_app.application.port.out.api.PaymentAPIs;
 import faddy.payments_app.infrastructure.out.pg.toss.response.ResponsePaymentApproved;
 import faddy.payments_app.infrastructure.out.pg.toss.response.ResponsePaymentCancel;
@@ -8,8 +9,6 @@ import faddy.payments_app.representation.request.payment.PaymentApproved;
 import faddy.payments_app.representation.request.payment.PaymentCancel;
 import faddy.payments_app.representation.request.payment.PaymentSettlement;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -49,14 +48,79 @@ public class TossPayment implements PaymentAPIs {
     @Override
     public ResponsePaymentApproved requestPaymentApprove(PaymentApproved paymentInfo)
         throws IOException {
-
-        Response<ResponsePaymentApproved> response = tossClient.paymentFullfill(paymentInfo).execute();
-
-        if(response.isSuccessful()) {
-            return response.body();
+        try {
+            // 요청 데이터 로깅
+            String orderId = paymentInfo.getOrderId();
+            String paymentKey = paymentInfo.getPaymentKey();
+            Integer amount = paymentInfo.getAmount();
+            
+            // NULL 체크
+            if (paymentKey == null || orderId == null || amount == null) {
+                throw new IOException("필수 파라미터가 누락되었습니다: paymentKey=" + paymentKey + 
+                    ", orderId=" + orderId + ", amount=" + amount);
+            }
+            
+            // 로깅 강화
+            System.out.println("==== 토스페이먼츠 API 호출 시작 ====");
+            System.out.println("요청 데이터: " + paymentInfo.toString());
+            
+            // 전체 URL 로깅 (디버깅 용도)
+            System.out.println("요청 엔드포인트: payments/confirm");
+            
+            // 환경 변수에서 baseUrl 직접 가져오기 (AopProxyUtils 대신 이 방법 사용)
+            String baseUrl = "https://api.tosspayments.com/v1";
+            System.out.println("API Base URL: " + baseUrl);
+            System.out.println("전체 요청 URL: " + baseUrl + "/payments/confirm");
+            
+            // OKHTTP 요청 디버깅 (요청 전문 확인)
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.setSerializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL);
+            
+            System.out.println("========= 토스페이먼츠 API 요청 정보 =========");
+            System.out.println("요청 JSON: " + mapper.writeValueAsString(paymentInfo));
+            System.out.println("요청 URL: https://api.tosspayments.com/v1/payments/confirm");
+            System.out.println("요청 필드: paymentKey, orderId, amount");
+            System.out.println("=========================================");
+                
+            // API 호출
+            Response<ResponsePaymentApproved> response = tossClient.paymentFullfill(paymentInfo).execute();
+            
+            System.out.println("응답 코드: " + response.code());
+            System.out.println("응답 메시지: " + response.message());
+            System.out.println("응답 헤더: " + response.headers());
+            
+            if(response.isSuccessful()) {
+                System.out.println("응답 본문: " + mapper.writeValueAsString(response.body()));
+                return response.body();
+            } else {
+                String errorBody = response.errorBody() != null ? 
+                    response.errorBody().string() : "에러 내용 없음";
+                System.out.println("에러 본문: " + errorBody);
+                
+                // 요청 실패 원인 상세 분석
+                System.out.println("토스페이먼츠 API 응답 실패: HTTP " + response.code());
+                System.out.println("에러 메시지: " + errorBody);
+                
+                if (response.code() == 404) {
+                    System.out.println("404 에러: API 엔드포인트를 찾을 수 없습니다. URL을 확인하세요.");
+                    System.out.println("요청 URL: https://api.tosspayments.com/v1/payments/confirm");
+                } else if (response.code() == 401) {
+                    System.out.println("401 에러: 인증에 실패했습니다. 시크릿 키를 확인하세요.");
+                } else if (response.code() == 400) {
+                    System.out.println("400 에러: 잘못된 요청입니다. 요청 파라미터를 확인하세요.");
+                }
+                
+                throw new IOException(errorBody);
+            }
+        } catch (IOException e) {
+            System.out.println("토스페이먼츠 API 예외 발생: " + e.getMessage());
+            System.out.println("==== 토스페이먼츠 API 호출 실패 ====");
+            throw e;
+        } catch (Exception e) {
+            System.out.println("예상치 못한 예외 발생: " + e.getClass().getName() + ": " + e.getMessage());
+            System.out.println("==== 토스페이먼츠 API 호출 실패 ====");
+            throw new IOException("요청 처리 중 오류가 발생했습니다: " + e.getMessage(), e);
         }
-
-        throw new IOException(response.errorBody().string());
     }
 
     /**

@@ -80,8 +80,15 @@ export const getPaymentSuccess = async (
   paymentType: string = 'CARD'
 ): Promise<string> => {
   try {
-    const response = await apiService.get<any>(
-      `/success?paymentKey=${paymentKey}&orderId=${orderId}&amount=${amount}&paymentType=${paymentType}`
+    // GET 요청 대신 POST 요청으로 변경
+    const response = await apiService.post<any>(
+      `/api/payments/success`, 
+      {
+        paymentKey,
+        orderId,
+        amount,
+        paymentType
+      }
     );
     
     // ApiResponse 구조 처리
@@ -98,16 +105,17 @@ export const getPaymentSuccess = async (
 // 결제 실패 처리
 export const handlePaymentFailure = async (message: string): Promise<string> => {
   try {
-    const response = await apiService.get<any>(`/fail?message=${encodeURIComponent(message)}`);
-    
-    // 실패 응답 구조도 확인
-    if (response) {
-      return response.message || response;
-    }
-    return response;
+    // 백엔드 API 호출 대신, 프론트엔드에서 로컬 처리만 수행
+    console.log('결제 실패 처리:', message);
+    // 실제 백엔드 호출이 필요하면 아래 주석을 해제하고 올바른 경로로 수정
+    // const response = await apiService.post<any>(`/api/payments/failure`, {
+    //   message: message
+    // });
+    return "failure_handled";
   } catch (error) {
     console.error('결제 실패 처리 오류:', error);
-    throw error;
+    // 에러가 발생해도 사용자 경험을 위해 계속 진행
+    return "failure_handled";
   }
 };
 
