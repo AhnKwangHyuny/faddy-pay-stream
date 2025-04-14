@@ -62,7 +62,13 @@ public class PaymentService implements PaymentFullfillUseCase, GetPaymentInfoUse
 
     @Override
     public PaymentLedger getLatestPaymentInfoOnlyOne(String paymentKey) {
-        return paymentLedgerRepository.findOneByPaymentKeyDesc(paymentKey);
+        PaymentLedger paymentLedger = paymentLedgerRepository.findOneByPaymentKeyDesc(paymentKey);
+
+        if (paymentLedger == null) {
+            throw new IllegalArgumentException("존재하지 않는 결제 정보입니다. (paymentLedger not exist) " + paymentKey);
+        }
+
+        return paymentLedger;
     }
 
     @Transactional
@@ -149,6 +155,8 @@ public class PaymentService implements PaymentFullfillUseCase, GetPaymentInfoUse
             return "fail";
         }
     }
+
+
 
     public void verifyOrderIsCompleted(UUID orderId) {
         OrderStatus orderStatus = orderRepository.findById(orderId).getStatus();

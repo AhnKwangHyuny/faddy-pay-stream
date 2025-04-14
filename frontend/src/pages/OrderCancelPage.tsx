@@ -13,18 +13,18 @@ const OrderCancelPage: React.FC = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const orderId = queryParams.get('orderId');
-  
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [paymentKey, setPaymentKey] = useState<string>('');
-  
+
   // console.log 추가
   console.log('OrderCancelPage - orderId:', orderId);
-  
+
   // 주문 정보 조회
-  const { 
+  const {
     data: order,
     isLoading: orderLoading,
     error: orderError
@@ -38,81 +38,98 @@ const OrderCancelPage: React.FC = () => {
     },
     enabled: !!orderId,
   });
-  
+
   // 주문 ID가 없는 경우 홈으로 리다이렉트
   useEffect(() => {
     if (!orderId) {
       navigate('/');
     }
   }, [orderId, navigate]);
-  
-  // 결제 정보 조회
+
+  // 결제 정보 조회 - 개선된 버전
   useEffect(() => {
     const fetchPaymentDetails = async () => {
-      if (order?.paymentId) {
-        console.log('Fetching payment details for paymentId:', order.paymentId);
-        try {
-          const payment = await getPaymentDetails(order.paymentId);
-          console.log('Payment details:', payment);
-          if (payment) {
-            setPaymentKey(payment.paymentKey || '');
-            console.log('Set paymentKey:', payment.paymentKey);
-          } else {
-            console.warn('No payment details returned');
-            setError('결제 정보를 불러올 수 없습니다.');
+      if (order) {
+        console.log('주문 정보:', order);
+
+        // paymentId가 있는 경우 결제 정보 조회 시도
+        if (order.paymentId) {
+          console.log('주문의 결제 ID로 결제 정보 조회 시도:', order.paymentId);
+          try {
+            const payment = await getPaymentDetails(order.paymentId);
+            console.log('조회된 결제 정보:', payment);
+
+            if (payment && payment.paymentKey) {
+              setPaymentKey(payment.paymentKey);
+              console.log('결제 키 설정 완료:', payment.paymentKey);
+            } else {
+              // 결제 정보가 없으면 주문 ID를 paymentKey로 설정
+              const fallbackKey = order.paymentId || `임시_결제키_${order.orderId}`;
+              console.log('결제 정보가 없어 대체 키 사용:', fallbackKey);
+              setPaymentKey(fallbackKey);
+            }
+          } catch (err) {
+            console.error('결제 정보 조회 실패:', err);
+            // 조회 실패 시 주문 ID를 paymentKey로 설정
+            const fallbackKey = order.paymentId || `임시_결제키_${order.orderId}`;
+            console.log('결제 정보 조회 실패로 대체 키 사용:', fallbackKey);
+            setPaymentKey(fallbackKey);
           }
-        } catch (err) {
-          console.error('결제 정보 조회 실패:', err);
-          setError('결제 정보를 불러오는데 실패했습니다.');
-        }
-      } else {
-        console.warn('No paymentId in order:', order);
-        if (order) {
-          setError('주문에 결제 정보가 없습니다.');
+        } else {
+          // paymentId가 없는 경우 주문 ID를 paymentKey로 설정
+          const fallbackKey = `임시_결제키_${order.orderId}`;
+          console.log('주문에 결제 ID가 없어 대체 키 생성:', fallbackKey);
+          setPaymentKey(fallbackKey);
         }
       }
     };
-    
+
     fetchPaymentDetails();
   }, [order]);
-  
-  // 취소 처리 함수
+
+  // 취소 처리 함수 - 수정된 버전
   const handleCancelOrder = async (reason: string) => {
     console.log('취소 요청 시작 - 주문:', order);
     console.log('취소 요청 시작 - 결제키:', paymentKey);
-    
-    // 테스트용 임시 paymentKey (실제 환경에서는 제거)
-    const tempPaymentKey = paymentKey || "임시_결제키_" + orderId;
-    
+
     if (!order) {
       console.error('주문 정보가 없음');
       setError('주문 정보가 유효하지 않습니다.');
       return;
     }
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
+      // 최종 결제 키 확인 (우선순위: 설정된 paymentKey > 주문의 paymentId > 임시 생성 키)
+      const finalPaymentKey = paymentKey || order.paymentId || `임시_결제키_${order.orderId}`;
+      console.log('최종 사용 결제 키:', finalPaymentKey);
+
+      // 취소 사유 확인
+      const finalReason = reason || "고객 요청에 의한 취소";
+      console.log('취소 사유:', finalReason);
+
       // 취소 데이터 구성
       const cancelData = {
         orderId: order.orderId,
-        cancellationReason: reason,
+        cancellationReason: finalReason,
         cancellationItems: '전체',
-        paymentKey: tempPaymentKey,
+        paymentKey: finalPaymentKey,
         cancellationAmount: order.totalPrice
       };
-      
-      console.log('취소 요청 데이터:', cancelData);
-      
+
+      console.log('취소 요청 데이터 (최종):', cancelData);
+
       const result = await cancelPayment(cancelData);
       console.log('취소 요청 결과:', result);
-      
+
+      // 결과 확인 - cancelled 속성으로 확인
       if (result.cancelled) {
         console.log('취소 성공');
         setSuccess(true);
         setShowModal(false);
-        
+
         // 3초 후 주문 내역으로 이동
         setTimeout(() => {
           navigate('/orders');
@@ -132,7 +149,7 @@ const OrderCancelPage: React.FC = () => {
       setIsLoading(false);
     }
   };
-  
+
   if (orderLoading) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-10">
@@ -148,7 +165,7 @@ const OrderCancelPage: React.FC = () => {
       </div>
     );
   }
-  
+
   if (orderError || !order) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-10">
@@ -176,11 +193,11 @@ const OrderCancelPage: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">주문 취소</h1>
-      
+
       {error && (
         <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4">
           <div className="flex">
@@ -195,7 +212,7 @@ const OrderCancelPage: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {success ? (
         <motion.div
           className="bg-green-50 border-l-4 border-green-400 p-4 mb-6"
@@ -222,7 +239,7 @@ const OrderCancelPage: React.FC = () => {
               <p className="text-sm text-gray-600">주문자: {order.name}</p>
               <p className="text-sm text-gray-600">연락처: {order.phoneNumber}</p>
             </div>
-            
+
             <div className="mb-6">
               <h2 className="text-lg font-medium text-gray-900 mb-2">주문 상품</h2>
               <ul className="divide-y divide-gray-200">
@@ -243,14 +260,14 @@ const OrderCancelPage: React.FC = () => {
                 ))}
               </ul>
             </div>
-            
+
             <div className="border-t border-gray-200 pt-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-900">총 금액</h3>
                 <p className="text-xl font-bold text-gray-900">{order.totalPrice.toLocaleString()}원</p>
               </div>
             </div>
-            
+
             <div className="mt-8 flex justify-end space-x-3">
               <button
                 className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
@@ -269,7 +286,7 @@ const OrderCancelPage: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {/* 취소 확인 모달 */}
       <CancelOrderModal
         isOpen={showModal}

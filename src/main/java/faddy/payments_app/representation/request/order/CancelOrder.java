@@ -3,6 +3,7 @@ package faddy.payments_app.representation.request.order;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import java.util.Arrays;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +14,6 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CancelOrder {
     private UUID orderId;
     private int[] itemIdxs;         // itemIdx 정보가 Empty면 전체 취소
@@ -83,5 +83,16 @@ public class CancelOrder {
             e.printStackTrace(); // 디버깅용 스택 트레이스 출력
             throw new IllegalArgumentException("주문 ID 형식 오류: " + orderIdStr, e);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "CancelOrder{" +
+            "orderId=" + orderId +
+            ", itemIdxs=" + Arrays.toString(itemIdxs) +
+            ", cancelReason='" + cancelReason + '\'' +
+            ", paymentKey='" + paymentKey + '\'' +
+            ", cancellationAmount=" + cancellationAmount +
+            '}';
     }
 }

@@ -28,6 +28,14 @@ public class OrderService implements CreateNewOrderUseCase, GetOrderInfoUseCase 
 
     @Override
     public Order getOrderById(UUID orderId) {
-        return orderRepository.findById(orderId);
+        Order wantedCancelOrder = orderRepository.findById(orderId);
+
+        if (wantedCancelOrder == null) {
+            throw new IllegalArgumentException("존재하지 않는 주문입니다: " + orderId);
+        }
+        return wantedCancelOrder;
     }
+
 }
+
+
