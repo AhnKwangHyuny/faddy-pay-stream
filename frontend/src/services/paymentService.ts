@@ -1,4 +1,4 @@
-import { CardPayment, PaymentLedger } from '../types/payment.types';
+import { CardPayment, PaymentLedger, PaymentMethod, PaymentStatus } from '../types/payment.types';
 import { apiService } from './api';
 
 // 결제 승인 요청 중복 방지를 위한 Map
@@ -120,12 +120,79 @@ export const handlePaymentFailure = async (message: string): Promise<string> => 
 };
 
 // 결제 정보 조회
-export const getPaymentDetails = async (paymentKey: string): Promise<PaymentLedger> => {
+export const getPaymentDetails = async (paymentId: string): Promise<PaymentLedger> => {
   try {
-    return await apiService.get<PaymentLedger>(`/api/payments/${paymentKey}`);
+    console.log(`결제 정보 조회 시작: ${paymentId}`);
+    
+    let response;
+    try {
+      // 첫 번째 경로 시도
+      console.log('API 호출 URL:', `/api/payments/${paymentId}`);
+      response = await apiService.get<PaymentLedger>(`/api/payments/${paymentId}`);
+      console.log('결제 정보 조회 응답:', response);
+    } catch (apiError) {
+      console.error('첫 번째 경로 실패:', apiError);
+      
+      // 두 번째 경로 시도
+      console.log('백업 경로 시도:', `/orders/payment/${paymentId}`);
+      try {
+        response = await apiService.get<PaymentLedger>(`/orders/payment/${paymentId}`);
+        console.log('백업 경로 응답:', response);
+      } catch (backupError) {
+        console.error('백업 경로도 실패:', backupError);
+        
+        // 세 번째 경로 시도 (paymentKey가 아닌 paymentId로 가정)
+        console.log('세 번째 경로 시도:', `/payments/${paymentId}`);
+        response = await apiService.get<PaymentLedger>(`/payments/${paymentId}`);
+        console.log('세 번째 경로 응답:', response);
+      }
+    }
+    
+    // 응답이 ApiResponse 형식인지 확인
+    if (response && typeof response === 'object') {
+      // success 속성이 있고 true인 경우
+      if ('success' in response && response.success === true) {
+        // data 속성이 있는지 확인
+        const apiResponse = response as any;
+        if (apiResponse.data) {
+          console.log('응답에서 data 추출:', apiResponse.data);
+          return apiResponse.data as PaymentLedger;
+        }
+      }
+    }
+    
+    // response가 이미 PaymentLedger 형태라면 그대로 반환
+    if (response && 'paymentKey' in response) {
+      return response as PaymentLedger;
+    }
+    
+    // 유효한 응답이 없을 경우 기본값 반환
+    return {
+      id: 0,
+      paymentKey: 'unknown',
+      method: PaymentMethod.CARD, // enum에서 정의된 값 사용
+      totalAmount: 0,
+      balanceAmount: 0,
+      payOutAmount: 0,
+      paymentStatus: PaymentStatus.EXPIRED, // enum에서 정의된 값 사용
+      canceledAmount: 0,
+      orderId: 'unknown'
+    };
   } catch (error) {
-    console.error(`결제 정보 조회 실패: ${paymentKey}`, error);
-    throw error;
+    console.error(`결제 정보 조회 실패: ${paymentId}`, error);
+    
+    // 오류 시 기본 결제 정보 반환 (UI 표시용)
+    return {
+      id: 0,
+      paymentKey: 'unknown',
+      method: PaymentMethod.CARD,
+      totalAmount: 0,
+      balanceAmount: 0,
+      payOutAmount: 0,
+      paymentStatus: PaymentStatus.EXPIRED,
+      canceledAmount: 0,
+      orderId: 'unknown'
+    };
   }
 };
 

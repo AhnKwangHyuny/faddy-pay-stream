@@ -8,6 +8,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import PaymentFailPage from './pages/PaymentFailPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
+import OrderCancelPage from './pages/OrderCancelPage';
 
 const AppRoutes: React.FC = () => {
   // 현재 실행 중인 URL 확인
@@ -34,6 +35,7 @@ const AppRoutes: React.FC = () => {
           <Route path="confirm" element={<Navigate to="/" replace />} />
 
           <Route path="orders" element={<OrderHistoryPage />} />
+          <Route path="order-cancel" element={<OrderCancelPage />} />
 
           {/* 모든 undefined 경로는 홈으로 리다이렉트 */}
           <Route path="*" element={<Navigate to="/" replace />} />

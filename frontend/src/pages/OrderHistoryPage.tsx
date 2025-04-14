@@ -268,10 +268,7 @@ const OrderHistoryPage: React.FC = () => {
                   <button
                     className="inline-flex items-center px-3 py-1 border border-red-300 text-sm font-medium rounded text-red-700 bg-white hover:bg-red-50"
                     onClick={() => {
-                      if (window.confirm('주문을 취소하시겠습니까?')) {
-                        // handleCancelOrder(order.orderId)
-                        alert('주문 취소 기능은 아직 구현되지 않았습니다.');
-                      }
+                      navigate(`/order-cancel?orderId=${order.orderId}`);
                     }}
                   >
                     주문 취소

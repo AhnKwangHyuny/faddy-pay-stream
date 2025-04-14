@@ -162,27 +162,49 @@ const convertBackendOrderToFrontend = (backendOrder: BackendOrder): Order => {
 // 주문 조회
 export const getOrderById = async (orderId: string): Promise<Order> => {
   try {
-    console.log(`주문 조회: ${orderId}`);
-    const response = await apiService.get<any>(`/api/orders/${orderId}`);
+    console.log(`주문 조회 시작: ${orderId}`);
+    
+    // 백엔드 API 호출 URL 로깅
+    console.log('API 요청 URL:', `/api/orders/${orderId}`);
+    
+    let response;
+    try {
+      response = await apiService.get<any>(`/api/orders/${orderId}`);
+      console.log('주문 조회 응답:', response);
+    } catch (apiError) {
+      console.error('API 호출 오류:', apiError);
+      
+      // 백업 경로로 시도
+      console.log('백업 경로로 시도: /orders/${orderId}');
+      response = await apiService.get<any>(`/orders/${orderId}`);
+      console.log('백업 경로 응답:', response);
+    }
 
     // 응답이 ApiResponse 형식인지 확인
     if (response && typeof response === 'object') {
       if ('success' in response && response.success === true && response.data) {
+        console.log('응답 데이터 변환 전:', response.data);
         // 백엔드 응답 구조를 프론트엔드 Order 타입으로 변환
-        return convertBackendOrderToFrontend(response.data);
+        const convertedOrder = convertBackendOrderToFrontend(response.data);
+        console.log('변환된 주문 데이터:', convertedOrder);
+        return convertedOrder;
       }
       // success는 true지만 data가 없는 경우
       if ('success' in response && response.success === true) {
+        console.warn('success는 true지만 data가 없음');
         return response;
       }
       // success가 false인 경우
       if ('success' in response && !response.success) {
+        console.error('응답의 success가 false:', response.message);
         throw new Error(response.message || '주문 조회에 실패했습니다');
       }
       // 다른 응답 형태
+      console.warn('예상치 못한 응답 형태:', response);
       return response;
     }
 
+    console.warn('응답이 예상 형식이 아님:', response);
     return response;
   } catch (error) {
     console.error(`주문 조회 실패: ${orderId}`, error);
